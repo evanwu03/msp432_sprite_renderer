@@ -85,12 +85,13 @@ int main(void)
     while (1)
     {
 
-            if(transmit_ready) { 
+        if(transmit_ready) { 
 
-            //HAL_LCD_write_command(0xFF);
-            HAL_LCD_write_data(0xAD);
-            HAL_LCD_write_command(0x1F);
-            transmit_ready = false;
+        //HAL_LCD_write_command(0xFF);
+        HAL_LCD_write_data(0xAD);
+        HAL_LCD_write_command(0x1F);
+        transmit_ready = false;
+
         }
 
     }

@@ -16,7 +16,7 @@ typedef enum {
 typedef enum  {
     GPIO_AFSEL_NONE,
     GPIO_AFSEL1, // Primary
-    GPIO_AFSEL2, // Secondary
+    GPIO_AFSEL2, // Secondary 
     GPIO_AFSEL3, // Tertiary
     GPIO_AFSEL4, 
     GPIO_AFSEL5,
