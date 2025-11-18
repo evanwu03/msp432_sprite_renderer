@@ -47,6 +47,10 @@ static const struct wdt_config_t wdt_config_interval_timer_1s = {
 
 
 
+volatile bool transmit_ready;
+
+
+
 int main(void)
 {
     WDT_hold(&wdt_a);
@@ -71,11 +75,23 @@ int main(void)
 
     Crystalfontz128x128_init();
 
+
+    //EUSCI_B0->STATW |= EUSCI_B_STATW_LISTEN;   // DEnable loopback mode for debugging
+
     __enable_irq();
+
+
 
     while (1)
     {
 
+            if(transmit_ready) { 
+
+            //HAL_LCD_write_command(0xFF);
+            HAL_LCD_write_data(0xAD);
+            HAL_LCD_write_command(0x1F);
+            transmit_ready = false;
+        }
 
     }
    
@@ -85,7 +101,7 @@ int main(void)
 void WDT_A_IRQHandler(void) {
 
        gpio_toggle(&led1);
-
+       transmit_ready = true;
 }
 
 

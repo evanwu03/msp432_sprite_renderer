@@ -7,7 +7,7 @@
 /// @param config 
 void SPI_initModule(EUSCI_B_Type* spi, const SPI_Config_t* config) {
 
-     // --- Configure the SPI pins based on module ---
+    /*  // --- Configure the SPI pins based on module ---
     if (spi == EUSCI_B0 || spi == EUSCI_B0_SPI) {
 
         // Set P1.5, P1.6, and P1.7 as SPI pins (CLK, MOSI, MISO)
@@ -28,7 +28,7 @@ void SPI_initModule(EUSCI_B_Type* spi, const SPI_Config_t* config) {
         
         P9->SEL0 |= BIT1 | BIT2 | BIT3;   // CLK, MOSI, MISO
         P9->SEL1 &= ~(BIT1 | BIT2 | BIT3);
-    }
+    } */
 
     // Add the configuration code here..
     spi->CTLW0 =  EUSCI_B_CTLW0_SWRST; // Clear previous configurations 
