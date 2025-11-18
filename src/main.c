@@ -76,7 +76,7 @@ int main(void)
     Crystalfontz128x128_init();
 
 
-    //EUSCI_B0->STATW |= EUSCI_B_STATW_LISTEN;   // DEnable loopback mode for debugging
+    //EUSCI_B0->STATW |= EUSCI_B_STATW_LISTEN;   // Enable loopback mode for debugging
 
     __enable_irq();
 
