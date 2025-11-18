@@ -7,8 +7,8 @@
 #include "../hal/include/spi.h"
 #include "../hal/include/gpio.h"
 #
-#define LCD_RS_PORT         PORT3_BASE  // P3.7
-#define LCD_RS_PIN          BIT7
+#define LCD_DC_PORT         PORT3_BASE  // P3.7
+#define LCD_DC_PIN          BIT7
 #define LCD_CS_PORT         PORT5_BASE  // P5.0
 #define LCD_CS_PIN          BIT0
 #define LCD_SPI_MOSI_PORT   PORT1_BASE  // P1.6
@@ -19,7 +19,7 @@
 #define LCD_RST_PIN         BIT7
 
 
-static struct gpio lcd_rs;
+static struct gpio lcd_dc;
 static struct gpio lcd_cs;
 static struct gpio lcd_spi_mosi;
 static struct gpio lcd_spi_clk;
@@ -46,7 +46,7 @@ void HAL_LCD_PORT_init(void) {
     gpio_init_output(&lcd_spi_clk, LCD_SPI_CLK_PORT, LCD_SPI_CLK_PIN);
     gpio_set_function(&lcd_spi_clk, GPIO_AFSEL1);
 
-    gpio_init_output(&lcd_rs, LCD_RS_PORT, LCD_RS_PIN);
+    gpio_init_output(&lcd_dc, LCD_DC_PORT, LCD_DC_PIN);
     gpio_init_output(&lcd_cs, LCD_CS_PORT, LCD_CS_PIN);
 
     gpio_init_output(&lcd_rst, LCD_RST_PORT, LCD_RST_PIN);
@@ -62,7 +62,7 @@ void HAL_LCD_SPI_init(void) {
 
     // Need to check why we pull RS high
     gpio_write(&lcd_cs, false);
-    gpio_write(&lcd_rs, true);
+    gpio_write(&lcd_dc, true);
 }
 
 

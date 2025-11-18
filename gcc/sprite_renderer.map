@@ -513,7 +513,7 @@ LOAD build/hal/msp432/wdt_msp432.o
                 0x20000260                wdt_a
  .bss.led1      0x20000268        0xc build/src/main.o
                 0x20000268                led1
- .bss.lcd_rs    0x20000274        0xc build/LcdDriver/HAL_MSP432P401R_LCD_ST7735.o
+ .bss.lcd_dc    0x20000274        0xc build/LcdDriver/HAL_MSP432P401R_LCD_ST7735.o
  .bss.lcd_cs    0x20000280        0xc build/LcdDriver/HAL_MSP432P401R_LCD_ST7735.o
  .bss.lcd_spi_mosi
                 0x2000028c        0xc build/LcdDriver/HAL_MSP432P401R_LCD_ST7735.o
