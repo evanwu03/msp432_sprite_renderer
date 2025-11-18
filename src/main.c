@@ -15,6 +15,8 @@
 
 // LCD driver 
 #include "../LcdDriver/HAL_MSP432P401R_LCD_ST7735.h"
+#include "../LcdDriver/Crystalfontz128x128_ST7735.h"
+
 
 
 // Peripherals 
@@ -67,8 +69,7 @@ int main(void)
 
 
 
-    HAL_LCD_PORT_init();
-
+    Crystalfontz128x128_init();
 
     __enable_irq();
 

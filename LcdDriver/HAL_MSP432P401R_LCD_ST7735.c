@@ -3,6 +3,8 @@
 #include "HAL_MSP432P401R_LCD_ST7735.h"
 
 #include <msp432p401r.h>
+#include <core_cm4.h>
+
 #include "../hal/msp432/msp432_regs.h"
 #include "../hal/include/spi.h"
 #include "../hal/include/gpio.h"
@@ -19,12 +21,14 @@
 #define LCD_RST_PIN         BIT7
 
 
-static struct gpio lcd_dc;
-static struct gpio lcd_cs;
-static struct gpio lcd_spi_mosi;
-static struct gpio lcd_spi_clk;
-static struct gpio lcd_rst;
+struct gpio lcd_dc;
+struct gpio lcd_cs;
+struct gpio lcd_spi_mosi;
+struct gpio lcd_spi_clk;
+struct gpio lcd_rst;
 
+
+// Check what parameters the ST7735 Requires
 /* Parameters to Configure eUSCI B0 Module for SPI mode */
     static const SPI_Config_t spi_config = { 
     .clock_sel = SPI_SMCLK,
@@ -60,16 +64,19 @@ void HAL_LCD_SPI_init(void) {
     SPI_initModule(EUSCI_B0, &spi_config);
     SPI_enableModule(EUSCI_B0);
 
-    // Need to check why we pull RS high
+
     gpio_write(&lcd_cs, false);
-    gpio_write(&lcd_dc, true);
+    gpio_write(&lcd_dc, true); // Set to data mode by default
 }
 
 
 
 void HAL_LCD_write_command(uint8_t command) { 
 
+    gpio_write(&lcd_dc, false);
     //SPI_sendByte(EUSCI_B0, command);
+
+    gpio_write(&lcd_dc, true);
 } 
 
 
@@ -86,4 +93,11 @@ void HAL_LCD_read_data(uint8_t* data_buffer, size_t length) {
 
 
 
+}
+
+
+void HAL_LCD_delay(volatile uint32_t cycles) { 
+
+    while(cycles--)
+        __NOP();
 }

@@ -10,7 +10,9 @@
         "printf.h": "c",
         "random": "c",
         "stdarg.h": "c",
-        "gpio.h": "c"
+        "gpio.h": "c",
+        "hal_msp432p401r_lcd_st7735.h": "c",
+        "crystalfontz128x128_st7735.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled",
     "cortex-debug.variableUseNaturalFormat": false
