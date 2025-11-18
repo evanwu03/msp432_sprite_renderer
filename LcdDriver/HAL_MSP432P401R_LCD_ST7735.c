@@ -74,9 +74,12 @@ void HAL_LCD_SPI_init(void) {
 void HAL_LCD_write_command(uint8_t command) { 
 
     gpio_write(&lcd_dc, false);
-    //SPI_sendByte(EUSCI_B0, command);
+    gpio_write(&lcd_cs, false);
+
+    SPI_sendByte(EUSCI_B0, command);
 
     gpio_write(&lcd_dc, true);
+    gpio_write(&lcd_cs, true);
 } 
 
 
@@ -84,15 +87,6 @@ void HAL_LCD_write_command(uint8_t command) {
 void HAL_LCD_write_data(uint8_t data) { 
 
     SPI_sendByte(EUSCI_B0, data);
-
-}
-
-
-
-void HAL_LCD_read_data(uint8_t* data_buffer, size_t length) { 
-
-
-
 }
 
 
