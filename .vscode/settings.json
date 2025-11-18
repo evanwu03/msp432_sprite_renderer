@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "driverlib.h": "c",
+        "compare": "c",
+        "cstdint": "c",
+        "msp432p401r.h": "c",
+        "msp.h": "c",
+        "spi.h": "c",
+        "uart.h": "c",
+        "printf.h": "c",
+        "random": "c",
+        "stdarg.h": "c",
+        "gpio.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled",
+    "cortex-debug.variableUseNaturalFormat": false
+}

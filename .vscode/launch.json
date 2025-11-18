@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug (OpenOCD)",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/gcc/build/sprite_renderer.out",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "interface": "swd",
+            "device": "MSP432P410R",
+            "runToEntryPoint": "main",
+            "svdFile": "${workspaceFolder}/svd/MSP432P401R.svd",
+            "showDevDebugOutput": "raw",
+            "configFiles": [
+                "/usr/share/openocd/scripts/board/ti_msp432_launchpad.cfg"
+            ],
+            "preLaunchCommands": [
+                "set mem inaccessible-by-default off",
+                "monitor reset"
+            ],
+            "postLaunchCommands": [
+                "monitor reset init",
+                "monitor sleep 200"
+            ],
+            "armToolchainPath": "/usr/bin/",
+            "gdbPath": "/usr/bin/gdb-multiarch"
+        }
+    ]
+}
