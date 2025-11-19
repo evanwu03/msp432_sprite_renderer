@@ -1,6 +1,6 @@
 
 
-#include "HAL_MSP432P401R_LCD_ST7735.h"
+#include "hal_lcd.h"
 
 #include <msp432p401r.h>
 #include <core_cm4.h>
@@ -9,6 +9,8 @@
 #include "../hal/include/spi.h"
 #include "../hal/include/gpio.h"
 
+
+// LCD pin definitions
 #define LCD_DC_PORT         PORT3_BASE  // P3.7
 #define LCD_DC_PIN          BIT7
 #define LCD_CS_PORT         PORT5_BASE  // P5.0
@@ -23,6 +25,8 @@
 #define LCD_RST_PIN         BIT7
 
 
+
+// LCD pins
 struct gpio lcd_dc;
 struct gpio lcd_cs;
 struct gpio lcd_spi_mosi;
@@ -79,8 +83,6 @@ void HAL_LCD_SPI_init(void) {
 
 void HAL_LCD_write_command(uint8_t command) { 
 
-
-    // I have the suspicious I need to keep the CS line down long enough
     gpio_write(&lcd_dc, false);
     //gpio_write(&lcd_cs, false);
 

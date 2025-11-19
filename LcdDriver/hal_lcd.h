@@ -1,6 +1,6 @@
 
-#ifndef HAL_MSP432P401R_LCD_ST7735 
-#define HAL_MSP432P401R_LCD_ST7735
+#ifndef HAL_LCD_H 
+#define HAL_LCD_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -14,22 +14,22 @@ extern struct gpio lcd_spi_clk;
 extern struct gpio lcd_rst;
 
 
-/// @brief 
-/// @param  
+/// @brief Initializes GPIO pins for LCD SPI port
+/// @param  None
 void HAL_LCD_PORT_init(void);
 
 
-/// @brief 
-/// @param  
+/// @brief Configures LCD spi port
+/// @param  None
 void HAL_LCD_SPI_init(void);
 
 
-/// @brief 
+/// @brief Sends a command to the LCD SPI controller
 /// @param command 
 void HAL_LCD_write_command(uint8_t command);
 
 
-/// @brief 
+/// @brief Writes data to the LCD SPI controller
 /// @param data
 void HAL_LCD_write_data(uint8_t data);
 
@@ -40,4 +40,4 @@ void HAL_LCD_delay(volatile uint32_t cycles);
 
 
 
-#endif // HAL_MSP432P401R_LCD_ST7735
+#endif // HAL_LCD_H

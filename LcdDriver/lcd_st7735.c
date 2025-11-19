@@ -1,11 +1,11 @@
 
 
-#include "Crystalfontz128x128_ST7735.h"
-#include "HAL_MSP432P401R_LCD_ST7735.h"
+#include "lcd.h"
+#include "hal_lcd.h"
 #include "../hal/include/gpio.h"
 
 
-void Crystalfontz128x128_init() { 
+void lcd_init() { 
 
     HAL_LCD_PORT_init();
     HAL_LCD_SPI_init();
@@ -18,4 +18,19 @@ void Crystalfontz128x128_init() {
     HAL_LCD_delay(10);
 
 
+    // Figure out start up process 
 }
+
+
+void lcd_set_window() { 
+
+
+    
+}
+
+void lcd_draw_pixel() { 
+
+
+
+}
+

@@ -14,8 +14,8 @@
 #include "../hal/include/gpio.h"
 
 // LCD driver 
-#include "../LcdDriver/HAL_MSP432P401R_LCD_ST7735.h"
-#include "../LcdDriver/Crystalfontz128x128_ST7735.h"
+#include "../LcdDriver/hal_lcd.h"
+#include "../LcdDriver/lcd.h"
 
 
 
@@ -73,7 +73,7 @@ int main(void)
 
 
 
-    Crystalfontz128x128_init();
+    lcd_init();
 
 
     //EUSCI_B0->STATW |= EUSCI_B_STATW_LISTEN;   // Enable loopback mode for debugging
