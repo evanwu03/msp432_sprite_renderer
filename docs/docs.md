@@ -13,5 +13,4 @@
 - More investigation needed in datasheet to understand different write commands as well as RGB color formatting options for pixels.
 
 # 20251119
-
-
+- Looking at the ST7735 datasheet I believe I can ignore all of the read instructions not implemented since I will only focus on writing

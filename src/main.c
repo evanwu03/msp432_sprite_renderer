@@ -14,7 +14,7 @@
 #include "../hal/include/gpio.h"
 
 // LCD driver 
-#include "../LcdDriver/hal_lcd.h"
+//#include "../LcdDriver/hal_lcd.h"
 #include "../LcdDriver/lcd.h"
 
 
@@ -44,11 +44,6 @@ static const struct wdt_config_t wdt_config_interval_timer_1s = {
     .clock_source = WDT_A_CTL_SSEL_3,
     .counter_clear = WDT_A_CTL_CNTCL
 };
-
-
-
-volatile bool transmit_ready;
-
 
 
 int main(void)
@@ -85,14 +80,7 @@ int main(void)
     while (1)
     {
 
-        if(transmit_ready) { 
-
-        //HAL_LCD_write_command(0xFF);
-        HAL_LCD_write_data(0xAD);
-        HAL_LCD_write_command(0x1F);
-        transmit_ready = false;
-
-        }
+        //lcd_draw_pixel();
 
     }
    
@@ -100,9 +88,7 @@ int main(void)
 
 
 void WDT_A_IRQHandler(void) {
-
        gpio_toggle(&led1);
-       transmit_ready = true;
 }
 
 
