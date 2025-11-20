@@ -93,89 +93,98 @@ void lcd_init() {
 
     // pulse RST pin briefly 
     gpio_write(&lcd_rst, false);
-    HAL_LCD_delay(10); // This reset should be longer than 9 us according to ST7735 datasheet. 1 cycle is normally around ~42 us on default settings
+    HAL_LCD_delay(20); // This reset should be longer than 9 us according to ST7735 datasheet. 1 cycle is normally around ~42 us on default settings
     gpio_write(&lcd_rst, true);
-    HAL_LCD_delay(10);
+    HAL_LCD_delay(20);
 
-
+    gpio_write(&lcd_cs, false);
     // Software reset to default initialized values
     HAL_LCD_write_command(SWRESET);
-    HAL_LCD_delay(3000);
+
+    gpio_write(&lcd_cs, true);
+    HAL_LCD_delay(50000);
 
 
     // Wake device from sleep mode
+    gpio_write(&lcd_cs, false);
     HAL_LCD_write_command(SLPOUT); 
-    HAL_LCD_delay(3000);  // Wait >=120 ms before sending next command
+    gpio_write(&lcd_cs, true);
+    HAL_LCD_delay(50000);  // Wait >=120 ms before sending next command
     
 
     // Frame rate control 68 Hz for 128x128 Refer to datasheet for calculation
+    gpio_write(&lcd_cs, false);
     HAL_LCD_write_command(FRMCTR1); 
     HAL_LCD_write_data(0x02);
     HAL_LCD_write_data(0x2C);
     HAL_LCD_write_data(0x2D);
+    gpio_write(&lcd_cs, true);
 
 
 
     // Set pixel format 
+    gpio_write(&lcd_cs, false);
     HAL_LCD_write_command(COLMOD);
     HAL_LCD_write_data(PIXEL_16BIT);
-
+    gpio_write(&lcd_cs, true);
 
     // Select row and column frame address 
+    gpio_write(&lcd_cs, false);
     HAL_LCD_write_command(MADCTL);
+    HAL_LCD_write_data(0x00);
+    gpio_write(&lcd_cs, true);
     
 
-    HAL_LCD_write_command(CASET);
-    HAL_LCD_write_data(0x00);
-    HAL_LCD_write_data(0x00);
-    HAL_LCD_write_data(0x00);
-    HAL_LCD_write_data(127);
+    // Turn Normal Display mode on 
+    gpio_write(&lcd_cs, false);
+    HAL_LCD_write_command(DISPON);
+    gpio_write(&lcd_cs, true);
 
-    HAL_LCD_write_command(RASET);
-    HAL_LCD_write_data(0x00);
-    HAL_LCD_write_data(0x00);
-    HAL_LCD_write_data(0x00);
-    HAL_LCD_write_data(127);
+    lcd_set_window(0, 0, 127, 127);
 
-
+    gpio_write(&lcd_cs, false);
     HAL_LCD_write_command(RAMWR);
     for (int i = 0; i < 16384; i++)
     {
         HAL_LCD_write_data(0x00);
         HAL_LCD_write_data(0x00);
+
     }
-    HAL_LCD_delay(10);
-
-
-    // Turn Normal Display mode on 
-    HAL_LCD_write_command(NORON);
-    HAL_LCD_write_command(DISPON);
-
+    gpio_write(&lcd_cs, true);
 }
 
 
-void lcd_set_window() { 
+void lcd_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) { 
 
+    /* x0 += 2;
+    y0 += 3;
+    x1 += 2;
+    y1 += 3; */
 
-    
-}
-
-void lcd_draw_pixel() { 
-
+    gpio_write(&lcd_cs, false);
     HAL_LCD_write_command(CASET);
-    HAL_LCD_write_data(0x00);
-    HAL_LCD_write_data(0x00);
-    HAL_LCD_write_data(0x00);
-    HAL_LCD_write_data(127);
+    HAL_LCD_write_data(x0 >> 8);     // XS
+    HAL_LCD_write_data(x0 & 0xFF);
+    HAL_LCD_write_data(x1 >> 8);     // XE
+    HAL_LCD_write_data(x1 & 0xFF);
+    gpio_write(&lcd_cs, true);
 
+    gpio_write(&lcd_cs, false);
     HAL_LCD_write_command(RASET);
-    HAL_LCD_write_data(0x00);
-    HAL_LCD_write_data(0x00);
-    HAL_LCD_write_data(0x00);
-    HAL_LCD_write_data(127);
+    HAL_LCD_write_data(y0 >> 8);     // XS
+    HAL_LCD_write_data(y0 & 0xFF);
+    HAL_LCD_write_data(y1 >> 8);     // XE
+    HAL_LCD_write_data(y1 & 0xFF);
+    gpio_write(&lcd_cs, true);
 
+}
+
+void lcd_draw_pixel(const uint16_t x, const uint16_t y, const uint16_t color) { 
+
+    lcd_set_window(x, y, x, y);
     HAL_LCD_write_command(RAMWR);
-    HAL_LCD_write_data(0xAF);
-
+    HAL_LCD_write_data(color >> 8);
+    HAL_LCD_write_data(color & 0xFF);
+    
 }
 

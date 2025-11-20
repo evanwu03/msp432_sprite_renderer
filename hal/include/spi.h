@@ -39,8 +39,8 @@ typedef enum {
 
 /// @brief SPI Clock phase determines when data is sampled (received)
 typedef enum {
-    SPI_SAMPLE_LEADING_EDGE  = 0,
-    SPI_SAMPLE_TRAILING_EDGE = EUSCI_B_CTLW0_CKPH
+    SPI_PHASE_DATA_CHANGED_ONFIRST_CAPTURE_ON_NEXT  = 0,
+    SPI_PHASE_DATA_CAPTURED_ONFIRST_CHANGED_ON_NEXT = EUSCI_B_CTLW0_CKPH
 } SPI_Clock_Phase_t;
 
 

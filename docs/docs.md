@@ -14,3 +14,5 @@
 
 # 20251119
 - Looking at the ST7735 datasheet I believe I can ignore all of the read instructions not implemented since I will only focus on writing
+- I have the initialization code setup and the commands are being decoded correctly on logic analyzer but it does not seem to actually draw a pixel on the screen. I may need to check timing to make sure my SPI settings are compatible with the ST7735
+- Figured out the root cause of my issue. I had simply had the SPI clock phase wrong! Instead of capturing on the rising edge and changing on the falling edge I had it reversed. Now I will need to fix my SPI driver.

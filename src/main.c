@@ -80,8 +80,7 @@ int main(void)
     while (1)
     {
 
-        //lcd_draw_pixel();
-
+        //lcd_draw_pixel(64, 64, 0xAA);
     }
    
 }
@@ -89,6 +88,7 @@ int main(void)
 
 void WDT_A_IRQHandler(void) {
        gpio_toggle(&led1);
+       //lcd_draw_pixel(64, 64, 0xAA);
 }
 
 
