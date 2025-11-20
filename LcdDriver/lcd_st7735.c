@@ -236,9 +236,12 @@ void lcd_draw_image(const uint8_t* pixels, uint8_t startX, uint8_t startY, uint8
     gpio_write(&lcd_cs, false);
     lcd_set_window(startX, startY, startX+(width-1), startY+(height-1));
     HAL_LCD_write_command(RAMWR);
-    for (int i = 0; i < width*height*2; i += 2) {
-        HAL_LCD_write_data(pixels[i+1]);     // High byte
-        HAL_LCD_write_data(pixels[i]); // Low byte
+    for (int i = 0; i < height * width*2; i += width*2) {
+        for(int j = 0; j < width * 2; j+=2){
+
+            HAL_LCD_write_data(pixels[i + j+1]);     // High byte
+            HAL_LCD_write_data(pixels[i + j + 0]); // Low byte
+        }
     }
     gpio_write(&lcd_cs, true);
 
