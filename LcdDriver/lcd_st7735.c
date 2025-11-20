@@ -83,6 +83,14 @@ typedef enum  {
 } pixel_format_t;
 
 
+typedef enum { 
+    ORDER_BGR = 0,        // shit be reversed on TI boosterpack??
+    ORDER_RGB = (1 << 3)  // BIT3
+} rgb_order_t;
+
+
+// Helpers
+static inline uint16_t RGB565(uint8_t red, uint8_t green, uint8_t blue);
 
 
 void lcd_init() { 
@@ -131,7 +139,7 @@ void lcd_init() {
     // Select row and column frame address 
     gpio_write(&lcd_cs, false);
     HAL_LCD_write_command(MADCTL);
-    HAL_LCD_write_data(0x00);
+    HAL_LCD_write_data(ORDER_RGB); // Turn on RGB?
     gpio_write(&lcd_cs, true);
     
 
@@ -140,7 +148,9 @@ void lcd_init() {
     HAL_LCD_write_command(DISPON);
     gpio_write(&lcd_cs, true);
 
+
     lcd_set_window(0, 0, 127, 127);
+
 
     gpio_write(&lcd_cs, false);
     HAL_LCD_write_command(RAMWR);
@@ -179,12 +189,33 @@ void lcd_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
 
 }
 
-void lcd_draw_pixel(const uint16_t x, const uint16_t y, const uint16_t color) { 
+void lcd_draw_pixel(const uint16_t x, const uint16_t y, const uint16_t red, const uint16_t green, const uint16_t blue) { 
 
     lcd_set_window(x, y, x, y);
+
+    uint16_t color = RGB565(red, green, blue);
+
+    gpio_write(&lcd_cs, false);
     HAL_LCD_write_command(RAMWR);
     HAL_LCD_write_data(color >> 8);
     HAL_LCD_write_data(color & 0xFF);
-    
+    gpio_write(&lcd_cs, true);
 }
 
+static inline uint16_t RGB565(uint8_t red, uint8_t green, uint8_t blue)  {
+
+    if (red > 31 ) { 
+        red = 31;
+    } 
+
+    if (green > 63) { 
+        green = 63; 
+    }
+
+    if (blue > 31) { 
+        blue = 31;
+    }
+
+    return ((red << 11) | (green << 5) | blue);
+
+}

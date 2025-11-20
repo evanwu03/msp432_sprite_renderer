@@ -14,7 +14,6 @@
 #include "../hal/include/gpio.h"
 
 // LCD driver 
-//#include "../LcdDriver/hal_lcd.h"
 #include "../LcdDriver/lcd.h"
 
 
@@ -69,9 +68,8 @@ int main(void)
 
 
     lcd_init();
+    lcd_draw_pixel(64, 64, 31, 63, 31);
 
-
-    //EUSCI_B0->STATW |= EUSCI_B_STATW_LISTEN;   // Enable loopback mode for debugging
 
     __enable_irq();
 
@@ -80,7 +78,7 @@ int main(void)
     while (1)
     {
 
-        //lcd_draw_pixel(64, 64, 0xAA);
+
     }
    
 }
@@ -88,7 +86,6 @@ int main(void)
 
 void WDT_A_IRQHandler(void) {
        gpio_toggle(&led1);
-       //lcd_draw_pixel(64, 64, 0xAA);
 }
 
 
