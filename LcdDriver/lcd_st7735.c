@@ -133,13 +133,16 @@ void lcd_init() {
     // Set pixel format 
     gpio_write(&lcd_cs, false);
     HAL_LCD_write_command(COLMOD);
+    //HAL_LCD_write_data(PIXEL_12BIT);
     HAL_LCD_write_data(PIXEL_16BIT);
+    //HAL_LCD_write_data(PIXEL_18BIT);
     gpio_write(&lcd_cs, true);
 
     // Select row and column frame address 
     gpio_write(&lcd_cs, false);
     HAL_LCD_write_command(MADCTL);
-    HAL_LCD_write_data(ORDER_RGB); // Turn on RGB?
+    HAL_LCD_write_data(ORDER_RGB); 
+    //HAL_LCD_write_data(ORDER_BGR); 
     gpio_write(&lcd_cs, true);
     
 
@@ -150,27 +153,19 @@ void lcd_init() {
 
 
     lcd_set_window(0, 0, 127, 127);
+    lcd_clear_screen();
 
-
-    gpio_write(&lcd_cs, false);
-    HAL_LCD_write_command(RAMWR);
-    for (int i = 0; i < 16384; i++)
-    {
-        HAL_LCD_write_data(0x00);
-        HAL_LCD_write_data(0x00);
-
-    }
-    gpio_write(&lcd_cs, true);
 }
 
 
 void lcd_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) { 
 
-    /* x0 += 2;
-    y0 += 3;
+    // If LCD orientation is default MADCTL: MY = 0, MX = 0, MV = 0
+    x0 += 2;
+    y0 += 1;
     x1 += 2;
-    y1 += 3; */
-
+    y1 += 3; 
+ 
     gpio_write(&lcd_cs, false);
     HAL_LCD_write_command(CASET);
     HAL_LCD_write_data(x0 >> 8);     // XS
@@ -217,5 +212,35 @@ static inline uint16_t RGB565(uint8_t red, uint8_t green, uint8_t blue)  {
     }
 
     return ((red << 11) | (green << 5) | blue);
+
+}
+
+
+void lcd_clear_screen() { 
+
+    gpio_write(&lcd_cs, false);
+    HAL_LCD_write_command(RAMWR);
+    for (int i = 0; i < 16384; i++)
+    {
+        HAL_LCD_write_data(0x00);
+        HAL_LCD_write_data(0x00);
+
+    }
+    gpio_write(&lcd_cs, true);
+}
+
+
+
+void lcd_draw_image(const uint8_t* pixels, uint8_t startX, uint8_t startY, uint8_t width, uint8_t height) { 
+
+    gpio_write(&lcd_cs, false);
+    lcd_set_window(startX, startY, startX+(width-1), startY+(height-1));
+    HAL_LCD_write_command(RAMWR);
+    for (int i = 0; i < width*height*2; i += 2) {
+        HAL_LCD_write_data(pixels[i+1]);     // High byte
+        HAL_LCD_write_data(pixels[i]); // Low byte
+    }
+    gpio_write(&lcd_cs, true);
+
 
 }

@@ -29,6 +29,10 @@ void lcd_draw_pixel(const uint16_t x, const uint16_t y, const uint16_t red, cons
 
 
 
+/// @brief Clears the screen and fills it with black
+void lcd_clear_screen();
 
+
+void lcd_draw_image(const uint8_t* pixels, uint8_t startX, uint8_t startY, uint8_t width, uint8_t height);
 
 #endif // LCD_H

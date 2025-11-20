@@ -17,6 +17,14 @@
 #include "../LcdDriver/lcd.h"
 
 
+// Pixel art byte map
+#include "pixel_map.h"
+
+
+#define WIDTH 128
+#define HEIGHT 128 
+
+
 
 // Peripherals 
 struct wdt wdt_a;
@@ -68,16 +76,17 @@ int main(void)
 
 
     lcd_init();
-    lcd_draw_pixel(64, 64, 31, 63, 31);
+    
 
 
     __enable_irq();
 
 
+    //lcd_draw_image(shark_square_128x128_map, 0, 0, WIDTH, HEIGHT);
+    lcd_draw_image(bocchi_twin_map, 0, 0, WIDTH, HEIGHT)
 
     while (1)
     {
-
 
     }
    
