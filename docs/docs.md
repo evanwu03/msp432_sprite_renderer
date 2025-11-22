@@ -26,3 +26,17 @@
 # 20251122
 - My next goal will be to render a 17 second @ 25 fps video of a man riding a bicycle with Ordinary by Alex Warren playing in the background. This will not be an easy feat without some offline video compression techniques because while you could save the video as MP4 which is already very compressed, the ST7735 LCD only takes raw RGB565 pixel values. Therefore we have to decode the video frames back to RGB565 for the MSP432 to process. Problem is we can't store this entire MP4 file as a raw RGB565 array because that would be roughly 14.9 MB of flash which is roughly 58x more flash than we have available to us on the MSP432. Now why not just load the video from an external SD card? Well that would be the easy path, but in my opinion not the rewarding one. 
 - I believe my next plan is exploring video compression strategies like delta frame encoding or run length encoding. I may also need to implement buffering logic or tile systems. 
+
+I think before we even touch the MSP432, we need a tool that:
+
+1. Loads the video/GIF
+
+2. Converts each frame to 128×128 RGB565
+
+3. Computes deltas between consecutive frames
+
+4. Visualizes the delta mask (so you can see what changed)
+
+5. Saves both:
+   - the full reconstructed frame (for debugging)
+   - the delta overlay (for tuning compression)
