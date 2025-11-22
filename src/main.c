@@ -85,8 +85,9 @@ int main(void)
     //lcd_draw_image(shark_square_128x128_map, 0, 0, WIDTH, HEIGHT);
     //lcd_draw_image(bocchi_twin_map, 0, 0, WIDTH, HEIGHT);
     //lcd_draw_image(kokomi_128x128_map, 0, 0, WIDTH, HEIGHT);
-    lcd_draw_image(ronald_wojak_128x128_map, 0, 0 , WIDTH, HEIGHT);
+    //lcd_draw_image(ronald_wojak_128x128_map, 0, 0 , WIDTH, HEIGHT);
     //lcd_draw_image(hatsune_miku_128x128_map, 0, 0,  WIDTH, HEIGHT);
+    lcd_draw_image(orca_128x128_map, 0, 0, WIDTH, HEIGHT);
     while (1)
     {
 
