@@ -6,7 +6,7 @@ import numpy as np
 import time 
 
 PATH = 'videos/ordinary.mp4'
-FRAME_TXT_DUMP = 'output/ordinary.txt'
+FRAME_TXT_DUMP = 'output/ordinary_delta.txt'
 RAW_BIN  = 'output/ordinary.bin'
 
 
@@ -83,6 +83,49 @@ def bgr_to_bgr565(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
 
 
 
+# BIT mask returns least significant N bits
+BITMASK  = [ 
+    0b00000000,
+    0b00000001,
+    0b00000011,
+    0b00000111,
+    0b00001111,
+    0b00011111,
+    0b00111111,
+    0b01111111,
+    0b11111111,
+]
+
+# For uint16 we can have 2 groups of 7 bits
+BITSHIFTS = [7, 7, 1]
+
+
+def getLSB(x: np.uint8, n: np.uint8) -> np.uint8: 
+
+    # Guard clause here    
+    return x & BITMASK[n-1]
+
+# Variable length encoding
+# 1. Break number into 7 bit groups
+# 2. Set top bit = 0 for last byte
+# 3. Set top bit = 1 for continuation
+def encodeUint16(x: np.uint16) -> bytearray:
+
+    buf = bytearray()
+
+    for i in range(len(BITSHIFTS)): 
+
+        lsb = getLSB(x, BITSHIFTS[i]) | 0b10000000 # get the LSB and mark continuation bit 
+        buf.append(lsb)        
+
+        x = x >> BITSHIFTS[i] ## move on to next group of 7 bits
+        
+        if x == 0:
+            break
+    buf[-1] &= 0b01111111
+    return buf # Return byte array 
+
+
 def main(): 
 
     start_time = time.time()
@@ -96,25 +139,52 @@ def main():
     
     #cap.open(PATH)
     delta_frames = delta_encode(cap)
+
+
     print(f'Total number of frames: {len(delta_frames)}')
-    
 
-    #prints frames in hex format
-    for i, frame in enumerate(delta_frames): 
-        np.savetxt(FRAME_TXT_DUMP, frame, fmt='%x')
-    
 
+    # Dumps delta frames in a txt file
+    with open(FRAME_TXT_DUMP, "w") as f:
+        for i, frame in enumerate(delta_frames):
+            f.write(f"# --- Frame {i} ---\n")
+            np.savetxt(f, frame, fmt="%x")
+            f.write("\n\n")
+
+
+        
     # flatten frames in 1D pixel array represented as uint16
-    all_pixels = np.concatenate([frame.flatten() for frame in delta_frames])
-    all_pixels = all_pixels.astype(np.uint16)
-    all_pixels.tofile(RAW_BIN)
+    raw_pixels = np.concatenate([frame.flatten() for frame in delta_frames])
+    raw_pixels = raw_pixels.astype(np.uint16)
+    raw_pixels.tofile(RAW_BIN)
+
 
     # Debugging information
-    print(f'Total number of pixels: {len(all_pixels)}')
-    print(f'Total number of bytes: {len(all_pixels)*2}')
+    print('Before variable length encoding')
+    print(f'Total number of pixels: {len(raw_pixels)}')
+    print(f'Total number of bytes: {len(raw_pixels)*2}\n')
+
+    
+    # Perform VLE
+    
+    pixels_with_vle = bytearray().join(encodeUint16(pixel) for pixel in raw_pixels)
+
+
+    # Dump to binary and txt file
+    with open('output/video_vle.bin', "wb") as f:
+        f.write(pixels_with_vle)
+
+    with open('output/video_vle.txt', "w") as f:
+        f.write(pixels_with_vle.hex(" "))
+
+
+    # Debugging information
+    print('After variable length encoding')
+    print(f'Total number of bytes: {len(pixels_with_vle)}')
+
+
     end_time = time.time()
     print(f'Total time elapsed: {end_time-start_time:.2f}')
-
 
 if __name__ == "__main__":
     main()
