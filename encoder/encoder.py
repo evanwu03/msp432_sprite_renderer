@@ -49,7 +49,7 @@ def video_playback(cap: cv2.VideoCapture) -> None:
 
 # Performs delta compression on a stream of frames and returns 
 # a list of frames
-def delta_encode(cap: cv2.VideoCapture) -> list:
+def deltaEncode(cap: cv2.VideoCapture) -> list:
 
     frames = []
 
@@ -93,9 +93,9 @@ deltas: list of delta frames (each int16 or int32 2D array)
 first_frame: the original BGR565 frame (uint16)
 Returns list of full frames in uint16.
 """
-def delta_decode(deltas: np.ndarray, first_frame: np.ndarray) -> np.ndarray:
+""" def delta_decode(deltas: np.ndarray, first_frame: np.ndarray) -> np.ndarray:
     print('Hello World')
-
+ """
 
 # Converts a frame in BGR888 -> BGR565
 def bgr_to_bgr565(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
@@ -162,6 +162,59 @@ def decodeUint16(stream: bytearray, pos: int) -> tuple[int, int]:
 
     return val, pos
 
+
+
+
+def rleEncode(values: list[int]) -> list[int]:
+
+    result = []
+    i = 0 
+    n = len(values)
+    run_len = 0
+
+
+    while i < n:
+
+        cur = values[i]
+
+        if cur == 0:
+            run_len = 1
+            while (i+run_len < n) and (values[i+run_len] == 0):
+                run_len += 1
+
+            # Append (val, count)
+            result.append(cur)
+            result.append(run_len)
+            i += run_len
+            
+        else: 
+            result.append(cur)
+            i+=1
+
+    return result
+
+
+def rleDecode(values: list[int]) -> list[int]:
+
+    result = []
+    i = 0
+    n = len(values)
+    run_len = 0
+
+    while i < n:
+
+        cur = values[i]
+
+        if cur == 0 :
+            run_len = values[i+1]
+            result.extend([0] * run_len)
+            i += 2
+        else:
+            result.append(values[i])
+            i += 1
+
+    return result
+
 def main(): 
 
     start_time = time.time()
@@ -174,7 +227,7 @@ def main():
     
     
     cap.open(PATH)
-    delta_frames = delta_encode(cap)
+    delta_frames = deltaEncode(cap)
 
 
     print(f'Total number of frames: {len(delta_frames)}')
@@ -192,10 +245,13 @@ def main():
     print(f'Total number of bytes: {len(delta_pixels)*2}\n')
 
     
-    # Perform Zigzag encoding and VLE
-    pixels_with_vle = bytearray().join(encodeUint16(zigzagEncode(pixel))for pixel in delta_pixels)
-
-
+    # Perform Zigzag -> RLE -> VLE chain
+    zigzag_vals = [zigzagEncode(pixel) for pixel in delta_pixels]
+    rle_vals    = rleEncode(zigzag_vals)
+    pixels_with_vle = bytearray().join(
+        encodeUint16(pixel) for pixel in rle_vals
+    )
+    
     # Debugging information
     print('After variable length encoding')
     print(f'Total number of bytes: {len(pixels_with_vle)}')
@@ -204,18 +260,16 @@ def main():
 
 
     # Decoding back to BGR656 delta frames
-    decoded_to_deltas = []
+    zigzag_vals_rle_encoded = []
     pos = 0
     while pos < len(pixels_with_vle): 
         val, pos = decodeUint16(pixels_with_vle, pos)
+        zigzag_vals_rle_encoded.append(val)
 
-        decoded_val = zigzagDecode(val)
-        decoded_to_deltas.append(decoded_val)
+    decoded_zigzag_vals = rleDecode(zigzag_vals_rle_encoded)
 
-    decoded_to_deltas = np.array(decoded_to_deltas, dtype=np.int16)
+    decoded_to_deltas = np.array([zigzagDecode(pixel) for pixel in decoded_zigzag_vals], dtype=np.int16)
     decoded_to_deltas.tofile(DECODED_BIN)
-
-
 
 
     # Dumps delta frames in a txt file
