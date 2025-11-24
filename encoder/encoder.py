@@ -71,19 +71,22 @@ def delta_encode(cap: cv2.VideoCapture) -> list:
     cap.release()
     return frames
 
+# Converts a frame in BGR888 -> BGR565
+def bgr_to_bgr565(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
 
-def bgr_to_bgr565(rgb: cv2.typing.MatLike) -> cv2.typing.MatLike:
+    blue  = (bgr[:, :, 0] >> 3)
+    green = (bgr[:, :, 1] >> 2)
+    red   = (bgr[:, :, 2] >> 3)
 
-    blue  = (rgb[:, :, 0] >> 3)
-    green = (rgb[:, :, 1] >> 2)
-    red   = (rgb[:, :, 2] >> 3)
-
-    rgb565 = (red << 11) | (green << 5) | blue
-    return rgb565
+    bgr565 = (red << 11) | (green << 5) | blue
+    return bgr565
 
 
 
 def main(): 
+
+    start_time = time.time()
+
 
     cap = cv2.VideoCapture(PATH)
 
@@ -101,11 +104,17 @@ def main():
         np.savetxt(FRAME_TXT_DUMP, frame, fmt='%x')
     
 
+    # flatten frames in 1D pixel array represented as uint16
     all_pixels = np.concatenate([frame.flatten() for frame in delta_frames])
     all_pixels = all_pixels.astype(np.uint16)
     all_pixels.tofile(RAW_BIN)
+
+    # Debugging information
     print(f'Total number of pixels: {len(all_pixels)}')
     print(f'Total number of bytes: {len(all_pixels)*2}')
+    end_time = time.time()
+    print(f'Total time elapsed: {end_time-start_time:.2f}')
+
 
 if __name__ == "__main__":
     main()
