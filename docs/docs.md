@@ -40,3 +40,14 @@ I think before we even touch the MSP432, we need a tool that:
 5. Saves both:
    - the full reconstructed frame (for debugging)
    - the delta overlay (for tuning compression)
+
+
+# 20251124
+
+## Compression pipeline
+1. delta compression
+2. zigzag encoding
+3. RLE (zero length runs)
+4. VLE (variable-length encode)
+5.  write bytes to file
+

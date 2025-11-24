@@ -137,7 +137,7 @@ def encodeUint16(x: np.uint32) -> bytearray:
     return buf # Return byte array 
 
 
-def zigzagEncode(x: np.int16) -> np.uint32:
+def zigzagEncode(x: int) -> np.uint32:
     x32 = np.int32(x)
     return int((x32 << 1) ^ (x32 >> 15))
 
@@ -153,16 +153,16 @@ def decodeUint16(stream: bytearray, pos: int) -> tuple[np.uint32, int]:
     val = np.uint16(0)
     shift = 0
 
-    while True: 
+    while pos < len(stream): 
 
-        msb = stream[pos] & 0x80
-        b = getLSB(stream[pos], 7)
-        val = val | np.uint16(b)<< shift
-
+        byte = stream[pos]
         pos += 1
 
+        # Extract the least significant 7 bits    
+        data = getLSB(byte, 7)
+        val |= np.uint32(data) << shift
 
-        if (msb == 0 ): # MSB = 0 -> end of integer
+        if (byte & 0x80): # MSB = 0 -> end of integer
             break
 
         shift += 7
