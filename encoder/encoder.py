@@ -12,6 +12,7 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 PATH = os.path.join(BASE, 'videos', 'ordinary.mp4')
 FRAME_TXT_DUMP = os.path.join(BASE, "output", "ordinary_delta.txt")
 DELTA_BIN = os.path.join(BASE, "output", "ordinary.bin")
+ENCODED_TXT_DUMP = os.path.join(BASE, 'output', 'video_vle.txt')
 DECODED_TXT_DUMP = os.path.join(BASE, "output", "decoded_pixels.txt")
 DECODED_BIN = os.path.join(BASE, "output", "decoded_pixels.bin")
 
@@ -20,7 +21,6 @@ DECODED_BIN = os.path.join(BASE, "output", "decoded_pixels.bin")
 
 # BIT mask returns least significant N bits
 BITMASK  = [ 
-    0b00000000,
     0b00000001,
     0b00000011,
     0b00000111,
@@ -31,11 +31,8 @@ BITMASK  = [
     0b11111111,
 ]
 
-# For uint16 we can have 2 groups of 7 bits
-BITSHIFTS = [7, 7, 1]
-
-
-
+# For uint16 we can have represent with groups of 7 bits
+BITSHIFTS = [7, 7, 7, 7, 7, 7, 7, 7, 7, 1]
 
 
 # Plays back video on screen
@@ -81,7 +78,7 @@ def delta_encode(cap: cv2.VideoCapture) -> list:
 
         # Convert from BGR to BGR565
         #current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2BGR565)
-        current_frame = bgr_to_bgr565(current_frame)
+        current_frame = bgr_to_bgr565(current_frame).astype(np.uint16)
 
     
         if prev_frame is None: 
@@ -91,7 +88,8 @@ def delta_encode(cap: cv2.VideoCapture) -> list:
 
         # Compute the delta frame as difference between current and previous frame
         # append it to list and update previous frame value
-        delta_frame = np.subtract(current_frame, prev_frame)
+        delta_frame = np.subtract(current_frame.astype(np.int32), prev_frame.astype(np.int32)).astype(np.int16)
+
 
         frames.append(delta_frame) 
 
@@ -122,13 +120,13 @@ def getLSB(x: np.uint8, n: np.uint8) -> np.uint8:
 # 1. Break number into 7 bit groups
 # 2. Set top bit = 0 for last byte
 # 3. Set top bit = 1 for continuation
-def encodeUint16(x: np.uint16) -> bytearray:
+def encodeUint16(x: np.uint32) -> bytearray:
 
     buf = bytearray()
 
     for i in range(len(BITSHIFTS)): 
 
-        lsb = getLSB(x, BITSHIFTS[i]) | 0b10000000 # get the LSB and mark continuation bit 
+        lsb = getLSB(x, BITSHIFTS[i]) | 0x80 # get the LSB and mark continuation bit 
         buf.append(lsb)        
 
         x = x >> BITSHIFTS[i] ## move on to next group of 7 bits
@@ -139,7 +137,18 @@ def encodeUint16(x: np.uint16) -> bytearray:
     return buf # Return byte array 
 
 
-def decodeUint16(stream: bytearray, pos: int) -> tuple[np.uint16, int]: 
+def zigzagEncode(x: np.int16) -> np.uint32:
+    x32 = np.int32(x)
+    return int((x32 << 1) ^ (x32 >> 15))
+
+
+
+def zigzagDecode(x: int) -> int:
+    return (x >> 1) ^ (-(x&1))
+
+
+
+def decodeUint16(stream: bytearray, pos: int) -> tuple[np.uint32, int]: 
 
     val = np.uint16(0)
     shift = 0
@@ -190,7 +199,7 @@ def main():
         
     # flatten frames in 1D pixel array represented as uint16
     raw_pixels = np.concatenate([frame.flatten() for frame in delta_frames])
-    raw_pixels = raw_pixels.astype(np.uint16)
+    raw_pixels = raw_pixels.astype(np.int16)
     raw_pixels.tofile(DELTA_BIN)
 
 
@@ -200,16 +209,14 @@ def main():
     print(f'Total number of bytes: {len(raw_pixels)*2}\n')
 
     
-    # Perform VLE
-    
-    pixels_with_vle = bytearray().join(encodeUint16(pixel) for pixel in raw_pixels)
-
+    # Perform Zigzag encoding and VLE
+    pixels_with_vle = bytearray().join(encodeUint16(zigzagEncode(pixel))for pixel in raw_pixels)
 
     # Dump to binary and txt file
     with open('output/video_vle.bin', "wb") as f:
         f.write(pixels_with_vle)
 
-    with open('output/video_vle.txt', "w") as f:
+    with open(ENCODED_TXT_DUMP, "w") as f:
         f.write(pixels_with_vle.hex(" "))
 
 
@@ -220,23 +227,17 @@ def main():
 
 
     # Decoding back to BGR656 delta frames
-    decoded_pixels = []
+    """ decoded_pixels = []
     pos = 0
     while pos < len(pixels_with_vle): 
         val, pos = decodeUint16(pixels_with_vle, pos)
-        decoded_pixels.append(val)
+
+        decoded_val = zigzagDecode(val)
+        decoded_pixels.append(decoded_val)
 
 
     decoded_pixels = np.array(decoded_pixels, dtype=np.uint16)
-    decoded_pixels.tofile("output/decoded_pixels.bin")
-
-
-    # Dumps delta frames in a txt file
-    with open(DECODED_TXT_DUMP, "w") as f:
-        for i, frame in enumerate(delta_frames):
-            f.write(f"# --- Frame {i} ---\n")
-            np.savetxt(f, frame, fmt="%x")
-            f.write("\n\n")
+    decoded_pixels.tofile("output/decoded_pixels.bin") """
 
     
     end_time = time.time()
