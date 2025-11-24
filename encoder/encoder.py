@@ -177,10 +177,10 @@ def main():
     cap = cv2.VideoCapture(PATH)
 
     print(f'FPS: {cap.get(cv2.CAP_PROP_FPS)}')      
-    #video_playback(cap)
+    video_playback(cap)
     
     
-    #cap.open(PATH)
+    cap.open(PATH)
     delta_frames = delta_encode(cap)
 
 
@@ -227,7 +227,7 @@ def main():
 
 
     # Decoding back to BGR656 delta frames
-    """ decoded_pixels = []
+    decoded_pixels = []
     pos = 0
     while pos < len(pixels_with_vle): 
         val, pos = decodeUint16(pixels_with_vle, pos)
@@ -237,9 +237,9 @@ def main():
 
 
     decoded_pixels = np.array(decoded_pixels, dtype=np.uint16)
-    decoded_pixels.tofile("output/decoded_pixels.bin") """
+    decoded_pixels.tofile("output/decoded_pixels.bin")
 
-    
+
     end_time = time.time()
     print(f'Total time elapsed: {end_time-start_time:.2f}')
 
