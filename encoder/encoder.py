@@ -4,12 +4,41 @@
 import cv2 
 import numpy as np
 import time 
-
-PATH = 'videos/ordinary.mp4'
-FRAME_TXT_DUMP = 'output/ordinary_delta.txt'
-RAW_BIN  = 'output/ordinary.bin'
+import os
 
 
+# Filepaths
+BASE = os.path.dirname(os.path.abspath(__file__))
+PATH = os.path.join(BASE, 'videos', 'ordinary.mp4')
+FRAME_TXT_DUMP = os.path.join(BASE, "output", "ordinary_delta.txt")
+DELTA_BIN = os.path.join(BASE, "output", "ordinary.bin")
+DECODED_TXT_DUMP = os.path.join(BASE, "output", "decoded_pixels.txt")
+DECODED_BIN = os.path.join(BASE, "output", "decoded_pixels.bin")
+
+
+# Used for Variable length encoding/decoding operaitons
+
+# BIT mask returns least significant N bits
+BITMASK  = [ 
+    0b00000000,
+    0b00000001,
+    0b00000011,
+    0b00000111,
+    0b00001111,
+    0b00011111,
+    0b00111111,
+    0b01111111,
+    0b11111111,
+]
+
+# For uint16 we can have 2 groups of 7 bits
+BITSHIFTS = [7, 7, 1]
+
+
+
+
+
+# Plays back video on screen
 def video_playback(cap: cv2.VideoCapture) -> None:
     fps = cap.get(cv2.CAP_PROP_FPS)
     delay = 1/fps
@@ -83,22 +112,6 @@ def bgr_to_bgr565(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
 
 
 
-# BIT mask returns least significant N bits
-BITMASK  = [ 
-    0b00000000,
-    0b00000001,
-    0b00000011,
-    0b00000111,
-    0b00001111,
-    0b00011111,
-    0b00111111,
-    0b01111111,
-    0b11111111,
-]
-
-# For uint16 we can have 2 groups of 7 bits
-BITSHIFTS = [7, 7, 1]
-
 
 def getLSB(x: np.uint8, n: np.uint8) -> np.uint8: 
 
@@ -126,6 +139,27 @@ def encodeUint16(x: np.uint16) -> bytearray:
     return buf # Return byte array 
 
 
+def decodeUint16(stream: bytearray, pos: int) -> tuple[np.uint16, int]: 
+
+    val = np.uint16(0)
+    shift = 0
+
+    while True: 
+
+        msb = stream[pos] & 0x80
+        b = getLSB(stream[pos], 7)
+        val = val | np.uint16(b)<< shift
+
+        pos += 1
+
+
+        if (msb == 0 ): # MSB = 0 -> end of integer
+            break
+
+        shift += 7
+
+    return val, pos
+
 def main(): 
 
     start_time = time.time()
@@ -144,6 +178,7 @@ def main():
     print(f'Total number of frames: {len(delta_frames)}')
 
 
+
     # Dumps delta frames in a txt file
     with open(FRAME_TXT_DUMP, "w") as f:
         for i, frame in enumerate(delta_frames):
@@ -156,7 +191,7 @@ def main():
     # flatten frames in 1D pixel array represented as uint16
     raw_pixels = np.concatenate([frame.flatten() for frame in delta_frames])
     raw_pixels = raw_pixels.astype(np.uint16)
-    raw_pixels.tofile(RAW_BIN)
+    raw_pixels.tofile(DELTA_BIN)
 
 
     # Debugging information
@@ -183,6 +218,27 @@ def main():
     print(f'Total number of bytes: {len(pixels_with_vle)}')
 
 
+
+    # Decoding back to BGR656 delta frames
+    decoded_pixels = []
+    pos = 0
+    while pos < len(pixels_with_vle): 
+        val, pos = decodeUint16(pixels_with_vle, pos)
+        decoded_pixels.append(val)
+
+
+    decoded_pixels = np.array(decoded_pixels, dtype=np.uint16)
+    decoded_pixels.tofile("output/decoded_pixels.bin")
+
+
+    # Dumps delta frames in a txt file
+    with open(DECODED_TXT_DUMP, "w") as f:
+        for i, frame in enumerate(delta_frames):
+            f.write(f"# --- Frame {i} ---\n")
+            np.savetxt(f, frame, fmt="%x")
+            f.write("\n\n")
+
+    
     end_time = time.time()
     print(f'Total time elapsed: {end_time-start_time:.2f}')
 
