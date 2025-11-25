@@ -8,8 +8,8 @@ import os
 
 
 # Filepaths
-#FILENAME = 'ordinary.mp4'
-FILENAME = 'ryo_yamada_128x128.mp4'
+FILENAME = 'ordinary.mp4'
+#FILENAME = 'ryo_yamada_128x128.mp4'
 BASE = os.path.dirname(os.path.abspath(__file__))
 PATH = os.path.join(BASE, 'videos', FILENAME)
 FRAME_TXT_DUMP = os.path.join(BASE, 'output', 'delta.txt')
@@ -268,15 +268,13 @@ def main():
     for tile in tiles:
 
         tile_all_zeros = not np.any(tile)
-        if (tile_all_zeros):
 
-            output.append(TILE_SKIP) # Skip title
-        
+        if not np.any(tile): 
+            #output.extend(encodeUint16(TILE_SKIP))
+            output.append(TILE_SKIP)
+
         else: 
-            output.append(TILE_DATA) # Nonzero delta, process tile
-
-            flat_tile = tile.flatten()
-
+            flat_tile = tile.flatten()    
             # Run Zigzag, and RLE
             zz = [zigzagEncode(px) for px in flat_tile]   
 
@@ -285,7 +283,9 @@ def main():
 
             # Write length of RLE so we can decode tile boundary later
             output.extend(encodeUint16(len(rle)))
-            output.extend(encodeUint16(px) for px in rle) 
+
+            for px in rle:
+                output.extend(encodeUint16(px)) 
 
 
     # Debugging information
@@ -297,11 +297,25 @@ def main():
     print('After variable length encoding')
     print(f'Total number of bytes: {len(output)}')
         
-    """ # flatten frames in 1D pixel array represented as uint16
+    # flatten frames in 1D pixel array represented as uint16
     delta_pixels = np.concatenate([frame.flatten() for frame in delta_frames])
     delta_pixels = delta_pixels.astype(np.int16)
     delta_pixels.tofile(DELTA_BIN)
 
+
+    # Decoding back to BGR656 delta frames
+    """ zigzag_vals_rle_encoded = []
+    pos = 0
+    while pos < len(output): 
+        val, pos = decodeUint16(output, pos)
+        zigzag_vals_rle_encoded.append(val)
+
+    decoded_zigzag_vals = rleDecode(zigzag_vals_rle_encoded)
+
+    decoded_to_deltas = np.array([zigzagDecode(px) for px in decoded_zigzag_vals], dtype=np.int16)
+    decoded_to_deltas.tofile(DECODED_BIN)  """
+    
+    """
 
     # Debugging information
     print('Before variable length encoding')
@@ -344,17 +358,11 @@ def main():
             f.write("\n\n")
 
 
-    """  with open(ENCODED_TXT_DUMP, "w") as f:
-        f.write(pixels_with_vle.hex(" "))
-
     # Dump to binary and txt file
     with open(ENCODED_BIN, "wb") as f:
-        f.write(pixels_with_vle) """
+        f.write(output) 
 
     
-
-
-
     end_time = time.time()
     print(f'Total time elapsed: {end_time-start_time:.2f}')
 
