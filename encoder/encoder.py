@@ -5,12 +5,18 @@ import cv2
 import numpy as np
 import time 
 import os
+from enum import Enum 
+
 
 
 # Filepaths
-FILENAME = 'ordinary.mp4'
+#FILENAME = 'ordinary.mp4'
+#FILENAME = 'ordinary_96x96_12fps.mp4'
+FILENAME = 'kanade_128x128.mp4'
 #FILENAME = 'ryo_yamada_128x128.mp4'
+#FILENAME = 'ryo_yamada_128x128_12fps.mp4'
 #FILENAME = 'kikuri.mp4'
+
 BASE = os.path.dirname(os.path.abspath(__file__))
 PATH = os.path.join(BASE, 'videos', FILENAME)
 FRAME_TXT_DUMP = os.path.join(BASE, 'output', 'delta.txt')
@@ -29,8 +35,11 @@ NUM_TILES = 256
 FRAME_WIDTH = 128
 FRAME_HEIGHT = 128
 
-# Tile OPCODe
-TILE_SKIP = 0xFF 
+
+class Color_Resolution(Enum):
+    COLOR_BGR565 = 0
+    COLOR_BGR444 = 1
+
 
 
 # Plays back video on screen
@@ -58,11 +67,9 @@ def video_playback(cap: cv2.VideoCapture) -> None:
 
 
 
-
-
 # Performs delta compression on a stream of frames and returns 
 # a list of frames
-def deltaEncode(cap: cv2.VideoCapture) -> list:
+def deltaEncode(cap: cv2.VideoCapture, color_resolution=Color_Resolution.COLOR_BGR565) -> list:
 
     frames = []
 
@@ -79,7 +86,13 @@ def deltaEncode(cap: cv2.VideoCapture) -> list:
 
         # Convert from BGR to BGR565
         #current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2BGR565)
-        current_frame = bgr_to_bgr565(current_frame).astype(np.uint16)
+        #current_frame = bgr_to_bgr565(current_frame).astype(np.uint16)
+
+        if color_resolution == Color_Resolution.COLOR_BGR565:
+            current_frame = bgr_to_bgr565(current_frame).astype(np.uint16)
+        elif color_resolution == Color_Resolution.COLOR_BGR444:
+            current_frame = bgr_to_bgr444(current_frame).astype(np.uint16)
+        
 
     
         if prev_frame is None: 
@@ -111,7 +124,15 @@ def bgr_to_bgr565(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
     bgr565 = (red << 11) | (green << 5) | blue
     return bgr565
 
+# Converts a frame in BGR888 -> BGR565
+def bgr_to_bgr444(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
 
+    blue  = (bgr[:, :, 0] >> 4)
+    green = (bgr[:, :, 1] >> 4)
+    red   = (bgr[:, :, 2] >> 4)
+
+    bgr444 = (red << 9) | (green << 5) | blue
+    return bgr444
 
 # Variable length encoding
 # 1. Break number into 7 bit groups
@@ -175,6 +196,7 @@ def rleEncode(values: list[int]) -> list[int]:
     i = 0 
     n = len(values)
     run_len = 0
+    #run_len1 = 0
 
 
     while i < n:
@@ -189,11 +211,26 @@ def rleEncode(values: list[int]) -> list[int]:
             # Append (val, count)
             result.append(cur)
             result.append(run_len)
-            i += run_len 
-        
+            i += run_len
+
         else: 
             result.append(cur)
             i+=1
+
+        # If we decide to RLE on consecutive 1s
+        """ if cur == 1:
+            run_len1 = 1
+            while (i+run_len1 < n) and (values[i+run_len1] == 0):
+                run_len1 += 1
+
+            # Append (val, count)
+            result.append(cur)
+            result.append(run_len1)
+            i += run_len1    """      
+
+
+        
+        
 
 
     return result
@@ -222,6 +259,7 @@ def rleDecode(values: list[int]) -> list[int]:
 
 
 
+
 def main(): 
 
     start_time = time.time()
@@ -237,7 +275,7 @@ def main():
     cap.open(PATH)
 
     #Delta Encoding
-    delta_frames = deltaEncode(cap) # np.ndarray of frames from mp4
+    delta_frames = deltaEncode(cap, Color_Resolution.COLOR_BGR444) # np.ndarray of frames from mp4
     delta_flatten = np.concatenate([frame.flatten() for frame in delta_frames])
 
         # Dumps delta frames in a txt file
@@ -327,7 +365,8 @@ def main():
     # ========================================================
 
     # Before encoding
-    print(f'Total number of frames: {len(delta_frames)}')
+    total_frames = len(delta_frames)
+    print(f'Total number of frames: {total_frames}')
     print('Before variable length encoding')
     print(f'Total number of pixels: {len(delta_flatten)}')
     print(f'Total number of bytes: {len(delta_flatten)*2}\n')
@@ -343,6 +382,7 @@ def main():
 
      # Perform Zigzag -> RLE -> VLE chain
     zigzag_vals = [zigzagEncode(px) for px in delta_pixels]
+
     rle_vals    = rleEncode(zigzag_vals)
     pixels_with_vle = bytearray().join(
         encodeUint16(px) for px in rle_vals
@@ -358,12 +398,12 @@ def main():
         f.write(pixels_with_vle)   
 
 
-    arr = np.array(zigzag_vals).reshape(425, 128, 128)
+    """ arr = np.array(zigzag_vals).reshape(total_frames, 96, 96).astype(np.uint16)
     with open('output/zigzag_encoded.txt', 'w') as f:
-        for frame_num in range(425):
+        for frame_num in range(total_frames):
             f.write(f"# --- Frame {frame_num} ---\n")
-            np.savetxt(f, arr[frame_num], fmt="%x")
-            f.write("\n\n")
+            np.savetxt(f, arr[frame_num], fmt="%04X")
+            f.write("\n\n") """
 
 
 
