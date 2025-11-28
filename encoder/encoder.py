@@ -91,11 +91,11 @@ def deltaEncode(cap: cv2.VideoCapture, color_resolution=Color_Resolution.COLOR_B
         #current_frame = bgr_to_bgr565(current_frame).astype(np.uint16)
 
         if color_resolution == Color_Resolution.COLOR_BGR565:
-            current_frame = bgr_to_bgr565(current_frame).astype(np.uint16)
+            current_frame = bgr_to_bgr565_frame(current_frame).astype(np.uint16)
         elif color_resolution == Color_Resolution.COLOR_BGR444:
-            current_frame = bgr_to_bgr444(current_frame).astype(np.uint16)
+            current_frame = bgr_to_bgr444_frame(current_frame).astype(np.uint16)
         elif color_resolution == Color_Resolution.COLOR_BGR332: 
-            current_frame = bgr_to_bgr332(current_frame).astype(np.uint16)
+            current_frame = bgr_to_bgr332_frame(current_frame).astype(np.uint16)
         
     
         if prev_frame is None: 
@@ -118,7 +118,7 @@ def deltaEncode(cap: cv2.VideoCapture, color_resolution=Color_Resolution.COLOR_B
 
 
 # Converts a frame in BGR888 -> BGR565
-def bgr_to_bgr565(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
+def bgr_to_bgr565_frame(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
 
     blue  = (bgr[:, :, 0] >> 3)
     green = (bgr[:, :, 1] >> 2)
@@ -128,8 +128,25 @@ def bgr_to_bgr565(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
     bgr565  = (blue << 11) | (green << 5) | red
     return bgr565
 
+def palette_bgr24_to_bgr565(palette24: list[int]) -> list[int]:
+    palette565 = []
+    for px in palette24:
+        B = (px >> 16) & 0xFF
+        G = (px >> 8)  & 0xFF
+        R =  px        & 0xFF
+
+        r5 = R >> 3
+        g6 = G >> 2
+        b5 = B >> 3
+
+        rgb565 = (r5 << 11) | (g6 << 5) | b5
+        palette565.append(rgb565)
+    return palette565
+
+
+
 # Converts a frame in BGR888 -> BGR565
-def bgr_to_bgr444(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
+def bgr_to_bgr444_frame(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
 
     blue  = (bgr[:, :, 0] >> 4)
     green = (bgr[:, :, 1] >> 4)
@@ -141,7 +158,7 @@ def bgr_to_bgr444(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
 
 
 # 8 bit palette quantization using uniform scaling. Want to replace this with more optimized methods eventually
-def bgr_to_bgr332(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
+def bgr_to_bgr332_frame(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
 
     blue  = (bgr[:, :, 0] >> 5)
     green = (bgr[:, :, 1] >> 5)
@@ -150,6 +167,19 @@ def bgr_to_bgr332(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
     #bgr444 = (red << 5) | (green << 2) | blue
     bgr444 = (blue << 5) | (green << 2) | red
     return bgr444
+
+
+def bgr24_to_int(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
+
+    blue  = bgr[:, :, 0].astype(np.uint32)
+    green = bgr[:, :, 1].astype(np.uint32)
+    red   = bgr[:, :, 2].astype(np.uint32)
+
+    #print(f'B: {blue}, G: {green}, R: {red}')
+    bgr24 = (blue << 16) | (green << 8) | red 
+
+    
+    return bgr24.astype(np.uint32)
 
 # Variable length encoding
 # 1. Break number into 7 bit groups
@@ -276,6 +306,80 @@ def rleDecode(values: list[int]) -> list[int]:
 
 
 
+def generate_palette(bucket, num_colors=256):
+
+    target_depth = int(np.log2(num_colors)) 
+    assert 2**target_depth == num_colors # "Num colors must be a power of 2!"
+
+    return median_cut_recurse(bucket, 0, target_depth)
+
+
+def median_cut_recurse(bucket, level, target_depth): 
+
+    if level == target_depth:
+        return [averageColor(bucket)]
+    
+    lower_palette, upper_palette = split_bucket(bucket)
+
+    left_colors = median_cut_recurse(lower_palette, level+1, target_depth)
+    right_colors = median_cut_recurse(upper_palette, level+1, target_depth)
+
+    return left_colors + right_colors
+def split_bucket(pixels): 
+
+    b_min = min( (px >> 16) & 0xFF for px in pixels)
+    b_max = max( (px >> 16) & 0xFF for px in pixels)
+    g_min = min( (px >> 8)  & 0xFF for px in pixels)
+    g_max = max( (px >> 8)  & 0xFF for px in pixels)
+    r_min = min( (px & 0xFF) for px in pixels)
+    r_max = max( (px & 0xFF) for px in pixels)
+
+    b_range = b_max - b_min
+    g_range = g_max - g_min
+    r_range = r_max - r_min
+
+    #print(f'min(B): {b_min}, max(B): {b_max}')
+    #print(f'min(G): {g_min}, max(B): {g_max}')
+    #print(f'min(B): {r_min}, max(B): {r_max}')
+
+
+    if b_range >= g_range and b_range >= r_range: # Sort by blue 
+        #pixels.sort(key=lambda px: (px >> 16) & 0xFF)
+        pixels = sorted(pixels, key=lambda px: (px >> 16) & 0xFF)
+    elif g_range >= r_range: # Sort by green 
+        #pixels.sort(key=lambda px: (px >> 8) & 0xFF) 
+        pixels = sorted(pixels, key=lambda px: (px >> 8) & 0xFF)
+    elif r_range >= g_range: # Otherwise sort by red
+        #pixels.sort(key=lambda px: (px & 0xFF))
+        pixels = sorted(pixels, key=lambda px: (px & 0xFF))
+
+    lower, upper = np.array_split(pixels, 2)
+
+    """ print("\n--- DEBUG SORT CHECK ---")
+    print("Showing first 20 sorted pixels AND extracted channels:")
+
+    for px in pixels[:20]:
+        B = (px >> 16) & 0xFF
+        G = (px >> 8)  & 0xFF
+        R =  px        & 0xFF
+        print(f"{px:06X}   B={B:3}  G={G:3}  R={R:3}")
+    print("-------------------------\n") """ 
+    #print(f'len(lower): {len(lower)}')
+    #print(f'len(upper): {len(upper)}')
+
+    return (lower, upper)
+
+
+def averageColor(pixel: np.ndarray) -> np.ndarray:
+     
+     if len(pixel) == 0:
+         return 0
+     
+     B = int(((pixel >> 16) & 0xFF).mean())
+     G = int(((pixel >> 8)  & 0xFF).mean())
+     R = int(( pixel        & 0xFF).mean())
+
+     return (B << 16) | (G << 8) | R
 
 def main(): 
 
@@ -285,16 +389,54 @@ def main():
     cap = cv2.VideoCapture(PATH)
 
     print(f'FPS: {cap.get(cv2.CAP_PROP_FPS)}')      
-    video_playback(cap)
+    #video_playback(cap)
     
 
     # Open video
     cap.open(PATH)
 
+
+
+
+    frame_list = []
+    while cap.isOpened(): 
+
+        ret, current = cap.read()
+        if not ret: 
+            print("Can't receive frame (stream end?). Exiting ...")
+            break
+        
+        #print(current.shape)
+        packed = bgr24_to_int(current)
+        
+        frame_list.append(packed)
+
+
+    
+    cap.release()
+    cv2.destroyAllWindows()
+
+    """ total = 0
+    for i, f in enumerate(frame_list):
+        print(i, f.shape, f.size)
+        total += f.size
+
+    print("expected total:", total)
+    """
+
+    pixels = np.concatenate([frame.flatten() for frame in frame_list])
+    color_palette = generate_palette(pixels, 256)
+    color_palette = palette_bgr24_to_bgr565(color_palette)
+    
+    print(f'length of color palette: {len(color_palette)}')
+    for color in range(len(color_palette)):
+        print(f'color_palette[{color}: {color_palette[color]:0X}]') 
+
+    cap.open(PATH)
     #Delta Encoding
     #delta_frames = deltaEncode(cap, Color_Resolution.COLOR_BGR444) # np.ndarray of frames from mp4
     #delta_frames = deltaEncode(cap, Color_Resolution.COLOR_BGR565) # 
-    delta_frames = deltaEncode(cap, Color_Resolution.COLOR_BGR332) # 
+    delta_frames = deltaEncode(cap, Color_Resolution.COLOR_BGR332) # Need to edit so first frame is also returned
     delta_flatten = np.concatenate([frame.flatten() for frame in delta_frames])
 
         # Dumps delta frames in a txt file
