@@ -190,7 +190,7 @@ def rleEncode(values: list[int]) -> list[int]:
             result.append(cur)
             result.append(run_len)
             i += run_len 
-              
+        
         else: 
             result.append(cur)
             i+=1
@@ -358,8 +358,17 @@ def main():
         f.write(pixels_with_vle)   
 
 
+    arr = np.array(zigzag_vals).reshape(425, 128, 128)
+    with open('output/zigzag_encoded.txt', 'w') as f:
+        for frame_num in range(425):
+            f.write(f"# --- Frame {frame_num} ---\n")
+            np.savetxt(f, arr[frame_num], fmt="%x")
+            f.write("\n\n")
 
-     # Decoding back to BGR656 delta frames
+
+
+
+    """  # Decoding back to BGR656 delta frames
     zigzag_vals_rle_encoded = []
     pos = 0
     while pos < len(pixels_with_vle): 
@@ -369,7 +378,7 @@ def main():
     decoded_zigzag_vals = rleDecode(zigzag_vals_rle_encoded)
 
     decoded_to_deltas = np.array([zigzagDecode(px) for px in decoded_zigzag_vals], dtype=np.int16)
-    decoded_to_deltas.tofile(DECODED_BIN)  
+    decoded_to_deltas.tofile(DECODED_BIN)   """
 
 
     

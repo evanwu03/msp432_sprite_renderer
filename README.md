@@ -24,7 +24,7 @@ $ make all
 
 ``` 
 $ openocd -f board/ti_msp432_launchpad.cfg 
-```
+```gi
 
 
 3. Open an arm gdb session and connect to openocd server and load application
