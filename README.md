@@ -1,6 +1,6 @@
 ## Summary
 
-A basic guide on how to build and execute a project for the MSP432P4xxx
+A basic guide on how to build and execute this project for the MSP432P4xxx
 series microcontroller by Texas Instruments
 
 ## Prerequisites 
@@ -34,5 +34,4 @@ $ (gdb) target remote :3333
 $ (gdb) load <executable_name.out>
 ```
 
-4. That's all! you can type `continue` or press physical reset button to see LCD screen display accelerometer data on the LCD screen.
-
+1. That's all! you can type `continue` or press physical reset button to continue programs
