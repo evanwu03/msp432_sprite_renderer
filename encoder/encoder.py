@@ -249,25 +249,29 @@ def main():
 
 
 
-    # Perform Tile compression/skipping here
-    tiles = []
+
+    # ========================================================
+    # Pixel Level RLE encoding scheme with tile compression 
+    # ========================================================
+
+    # tiles = []
 
     # Construct tiles
-    for frame in delta_frames:
+    """ for frame in delta_frames:
         for row in range(0, FRAME_WIDTH, TILE_WIDTH): 
             for col in range(0, FRAME_HEIGHT, TILE_HEIGHT): # Scan across columns first then
                 tile = np.array(frame[row:row+TILE_HEIGHT, col:col+TILE_WIDTH])
-                tiles.append(tile)
+                tiles.append(tile) """
 
 
-    # Print total number of zero tiles
+    """ # Print total number of zero tiles
     total_tiles = len(tiles)
     zero_tiles = sum(1 for t in tiles if not np.any(t))
     zero_tile_ratio = zero_tiles/total_tiles
-    print(f'Zero tile ratio {zero_tile_ratio:0.2f}')
+    print(f'Zero tile ratio {zero_tile_ratio:0.2f}') """
 
 
-    prev = None
+    """ prev = None
     repeat_count = 0
 
     for idx, tile in enumerate(tiles):
@@ -276,12 +280,12 @@ def main():
         prev = tile
 
     repeat_ratio = repeat_count / len(tiles)
-    print(f'Tile repeat ratio: {repeat_ratio:.2f}\n')
+    print(f'Tile repeat ratio: {repeat_ratio:.2f}\n') """
    
     
 
 
-    # run tile compression algorithm
+    """  # run tile compression algorithm
     output = bytearray()
     
     for tile in tiles:
@@ -303,47 +307,59 @@ def main():
         output.extend(encodeUint16(len(rle)))
 
         for px in rle:
-            output.extend(encodeUint16(px)) 
+            output.extend(encodeUint16(px))  """
     
 
+    # After encoding
+    """ print('After variable length encoding')
+    print(f'Total number of bytes: {len(output)}') """
+
+    #print(f'Compression Ratio: {len(delta_flatten)*2/len(output):.2f}')
+
+    """ # Dump encoded data to binary
+    with open(ENCODED_BIN, "wb") as f:
+        f.write(output)   """
     
-    # Debugging information
+
+
+    # ========================================================
+    # Pixel Level RLE encoding scheme without tile compression 
+    # ========================================================
+
+    # Before encoding
     print(f'Total number of frames: {len(delta_frames)}')
     print('Before variable length encoding')
     print(f'Total number of pixels: {len(delta_flatten)}')
     print(f'Total number of bytes: {len(delta_flatten)*2}\n')
 
-    print('After variable length encoding')
-    print(f'Total number of bytes: {len(output)}')
-
-    print(f'Compression Ratio: {len(delta_flatten)*2/len(output):.2f}')
-
-    # Dump encoded data to binary
-    with open(ENCODED_BIN, "wb") as f:
-        f.write(output) 
 
 
-
-    """  # flatten frames in 1D pixel array represented as uint16
+    # flatten frames in 1D pixel array represented as uint16
     delta_pixels = np.concatenate([frame.flatten() for frame in delta_frames])
     delta_pixels = delta_pixels.astype(np.int16)
-    delta_pixels.tofile(DELTA_BIN) """
+    delta_pixels.tofile(DELTA_BIN) 
 
     
-    """ # Perform Zigzag -> RLE -> VLE chain
+
+     # Perform Zigzag -> RLE -> VLE chain
     zigzag_vals = [zigzagEncode(px) for px in delta_pixels]
     rle_vals    = rleEncode(zigzag_vals)
     pixels_with_vle = bytearray().join(
         encodeUint16(px) for px in rle_vals
     )
+
+
+
     # Debugging information
     print('After variable length encoding')
     print(f'Total number of bytes: {len(pixels_with_vle)}')
 
     with open(ENCODED_BIN, "wb") as f:
-        f.write(pixels_with_vle)   """
+        f.write(pixels_with_vle)   
 
-    """ # Decoding back to BGR656 delta frames
+
+
+     # Decoding back to BGR656 delta frames
     zigzag_vals_rle_encoded = []
     pos = 0
     while pos < len(pixels_with_vle): 
@@ -353,10 +369,12 @@ def main():
     decoded_zigzag_vals = rleDecode(zigzag_vals_rle_encoded)
 
     decoded_to_deltas = np.array([zigzagDecode(px) for px in decoded_zigzag_vals], dtype=np.int16)
-    decoded_to_deltas.tofile(DECODED_BIN)  """
+    decoded_to_deltas.tofile(DECODED_BIN)  
 
 
     
+
+
     end_time = time.time()
     print(f'Total time elapsed: {end_time-start_time:.2f}')
 
