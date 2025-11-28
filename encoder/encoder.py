@@ -373,6 +373,7 @@ def split_bucket(pixels):
 def averageColor(pixel: np.ndarray) -> np.ndarray:
      
      if len(pixel) == 0:
+         print("Did not find any pixels to average")
          return 0
      
      B = int(((pixel >> 16) & 0xFF).mean())
