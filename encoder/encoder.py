@@ -10,6 +10,7 @@ import os
 # Filepaths
 FILENAME = 'ordinary.mp4'
 #FILENAME = 'ryo_yamada_128x128.mp4'
+#FILENAME = 'kikuri.mp4'
 BASE = os.path.dirname(os.path.abspath(__file__))
 PATH = os.path.join(BASE, 'videos', FILENAME)
 FRAME_TXT_DUMP = os.path.join(BASE, 'output', 'delta.txt')
@@ -22,16 +23,14 @@ DECODED_BIN = os.path.join(BASE, 'output', 'decoded_pixels.bin')
 
 
 # Tile Specifications
-TILE_WIDTH  = 8 # Pixels
-TILE_HEIGHT = 8
+TILE_WIDTH  = 16 # Pixels
+TILE_HEIGHT = 16
 NUM_TILES = 256
 FRAME_WIDTH = 128
 FRAME_HEIGHT = 128
 
 # Tile OPCODe
 TILE_SKIP = 0xFF 
-TILE_DATA = 0xFE
-
 
 
 # Plays back video on screen
@@ -101,15 +100,6 @@ def deltaEncode(cap: cv2.VideoCapture) -> list:
     return frames
 
 
-"""
-Undo delta compression.
-deltas: list of delta frames (each int16 or int32 2D array)
-first_frame: the original BGR565 frame (uint16)
-Returns list of full frames in uint16.
-"""
-""" def delta_decode(deltas: np.ndarray, first_frame: np.ndarray) -> np.ndarray:
-    print('Hello World')
- """
 
 # Converts a frame in BGR888 -> BGR565
 def bgr_to_bgr565(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
@@ -199,11 +189,12 @@ def rleEncode(values: list[int]) -> list[int]:
             # Append (val, count)
             result.append(cur)
             result.append(run_len)
-            i += run_len
-            
+            i += run_len 
+              
         else: 
             result.append(cur)
             i+=1
+
 
     return result
 
@@ -249,9 +240,16 @@ def main():
     delta_frames = deltaEncode(cap) # np.ndarray of frames from mp4
     delta_flatten = np.concatenate([frame.flatten() for frame in delta_frames])
 
+        # Dumps delta frames in a txt file
+    with open(FRAME_TXT_DUMP, "w") as f:
+        for i, frame in enumerate(delta_frames):
+            f.write(f"# --- Frame {i} ---\n")
+            np.savetxt(f, frame, fmt="%x")
+            f.write("\n\n")
+
+
+
     # Perform Tile compression/skipping here
-    # 
-    # 
     tiles = []
 
     # Construct tiles
@@ -262,32 +260,53 @@ def main():
                 tiles.append(tile)
 
 
-    output = bytearray()
+    # Print total number of zero tiles
+    total_tiles = len(tiles)
+    zero_tiles = sum(1 for t in tiles if not np.any(t))
+    zero_tile_ratio = zero_tiles/total_tiles
+    print(f'Zero tile ratio {zero_tile_ratio:0.2f}')
+
+
+    prev = None
+    repeat_count = 0
+
+    for idx, tile in enumerate(tiles):
+        if prev is not None and np.array_equal(tile, prev):
+            repeat_count += 1
+        prev = tile
+
+    repeat_ratio = repeat_count / len(tiles)
+    print(f'Tile repeat ratio: {repeat_ratio:.2f}\n')
+   
+    
+
 
     # run tile compression algorithm
+    output = bytearray()
+    
     for tile in tiles:
 
-        tile_all_zeros = not np.any(tile)
 
         if not np.any(tile): 
-            #output.extend(encodeUint16(TILE_SKIP))
+            # Skip tile
             output.append(TILE_SKIP)
+            continue
 
-        else: 
-            flat_tile = tile.flatten()    
-            # Run Zigzag, and RLE
-            zz = [zigzagEncode(px) for px in flat_tile]   
+        flat_tile = tile.flatten()    
+        # Run Zigzag, and RLE
+        zz = [zigzagEncode(px) for px in flat_tile]   
 
-            rle = rleEncode(zz)
-
-
-            # Write length of RLE so we can decode tile boundary later
-            output.extend(encodeUint16(len(rle)))
-
-            for px in rle:
-                output.extend(encodeUint16(px)) 
+        rle = rleEncode(zz)
 
 
+        # Write length of RLE so we can decode tile boundary later
+        output.extend(encodeUint16(len(rle)))
+
+        for px in rle:
+            output.extend(encodeUint16(px)) 
+    
+
+    
     # Debugging information
     print(f'Total number of frames: {len(delta_frames)}')
     print('Before variable length encoding')
@@ -296,48 +315,35 @@ def main():
 
     print('After variable length encoding')
     print(f'Total number of bytes: {len(output)}')
-        
-    # flatten frames in 1D pixel array represented as uint16
+
+    print(f'Compression Ratio: {len(delta_flatten)*2/len(output):.2f}')
+
+    # Dump encoded data to binary
+    with open(ENCODED_BIN, "wb") as f:
+        f.write(output) 
+
+
+
+    """  # flatten frames in 1D pixel array represented as uint16
     delta_pixels = np.concatenate([frame.flatten() for frame in delta_frames])
     delta_pixels = delta_pixels.astype(np.int16)
-    delta_pixels.tofile(DELTA_BIN)
-
-
-    # Decoding back to BGR656 delta frames
-    """ zigzag_vals_rle_encoded = []
-    pos = 0
-    while pos < len(output): 
-        val, pos = decodeUint16(output, pos)
-        zigzag_vals_rle_encoded.append(val)
-
-    decoded_zigzag_vals = rleDecode(zigzag_vals_rle_encoded)
-
-    decoded_to_deltas = np.array([zigzagDecode(px) for px in decoded_zigzag_vals], dtype=np.int16)
-    decoded_to_deltas.tofile(DECODED_BIN)  """
-    
-    """
-
-    # Debugging information
-    print('Before variable length encoding')
-    print(f'Total number of pixels: {len(delta_pixels)}')
-    print(f'Total number of bytes: {len(delta_pixels)*2}\n')
+    delta_pixels.tofile(DELTA_BIN) """
 
     
-    # Perform Zigzag -> RLE -> VLE chain
+    """ # Perform Zigzag -> RLE -> VLE chain
     zigzag_vals = [zigzagEncode(px) for px in delta_pixels]
     rle_vals    = rleEncode(zigzag_vals)
     pixels_with_vle = bytearray().join(
         encodeUint16(px) for px in rle_vals
     )
-    
     # Debugging information
     print('After variable length encoding')
     print(f'Total number of bytes: {len(pixels_with_vle)}')
 
+    with open(ENCODED_BIN, "wb") as f:
+        f.write(pixels_with_vle)   """
 
-
-
-    # Decoding back to BGR656 delta frames
+    """ # Decoding back to BGR656 delta frames
     zigzag_vals_rle_encoded = []
     pos = 0
     while pos < len(pixels_with_vle): 
@@ -347,20 +353,8 @@ def main():
     decoded_zigzag_vals = rleDecode(zigzag_vals_rle_encoded)
 
     decoded_to_deltas = np.array([zigzagDecode(px) for px in decoded_zigzag_vals], dtype=np.int16)
-    decoded_to_deltas.tofile(DECODED_BIN) """
+    decoded_to_deltas.tofile(DECODED_BIN)  """
 
-
-    # Dumps delta frames in a txt file
-    with open(FRAME_TXT_DUMP, "w") as f:
-        for i, frame in enumerate(delta_frames):
-            f.write(f"# --- Frame {i} ---\n")
-            np.savetxt(f, frame, fmt="%x")
-            f.write("\n\n")
-
-
-    # Dump to binary and txt file
-    with open(ENCODED_BIN, "wb") as f:
-        f.write(output) 
 
     
     end_time = time.time()
