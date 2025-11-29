@@ -21,7 +21,7 @@ def main():
 
     start_time = time.time()
 
-    #video_playback(FILEPATH)
+    video_playback(FILEPATH)
 
     video = extract_video_frames(FILEPATH)
     print(f'Video Resolution: {video.shape}')

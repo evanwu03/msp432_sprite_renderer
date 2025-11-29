@@ -10,6 +10,7 @@ def video_playback(filepath) -> None:
 
     cap = cv2.VideoCapture(filepath)
     fps = cap.get(cv2.CAP_PROP_FPS)
+    print(f'FPS: {fps}')
     delay = 1/fps
 
     while cap.isOpened():
@@ -17,7 +18,7 @@ def video_playback(filepath) -> None:
         
         # if frame is read correctly ret is True
         if not ret:
-            print("Can't receive frame (stream end?). Exiting ...")
+            print("Can't receive frame (stream end?). Exiting ...\n")
             break
 
         cv2.imshow('frame', frame)
