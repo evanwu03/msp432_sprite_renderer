@@ -52,13 +52,13 @@ def zigzagEncode(arr: np.ndarray) -> np.ndarray:
     for i in range(len(arr)):
         zigzag.append(zigzagEncodeSingle(arr[i]))
         
-    return np.array(zigzag, dtype=np.uint16)
+    return np.array(zigzag, dtype=np.uint8)
 
 def zigzagEncodeSingle(val) :
     if val < 0:
         return - 2 * val  - 1
-    return 2 * val  """
-
+    return 2 * val 
+ """
 
 def rleEncode(values: np.ndarray) -> np.ndarray:
 
@@ -86,7 +86,7 @@ def rleEncode(values: np.ndarray) -> np.ndarray:
             i+=1
 
 
-    return result 
+    return np.array(result, dtype=np.uint32) 
 
 
 # Variable length encoding

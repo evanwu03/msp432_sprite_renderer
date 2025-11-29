@@ -26,8 +26,8 @@ def main():
     video = extract_video_frames(FILEPATH)
     print(f'Video Resolution: {video.shape}')
 
-    height = 128
-    weight = 128
+    height = video.shape[1]
+    weight = video.shape[2]
     num_frames = len(video)
 
     # Generate Color palette
@@ -35,8 +35,12 @@ def main():
 
     color_palette = generate_palette(pixels, 256)
     color_palette = palette_bgr24_to_bgr565(color_palette)
-    color_palette = np.array(list(dict.fromkeys(color_palette)), dtype=np.uint16)
-
+    
+    #color_palette = np.array(list(dict.fromkeys(color_palette)), dtype=np.uint16)
+    #color_palette = color_palette[np.argsort(color_palette, kind='quicksort')] # Naive sorting of colors
+    
+    """ perm = np.random.permutation(len(color_palette)) # Scrambling color list to see effect on file size
+    color_palette = color_palette[perm] """
 
     quantized = quantize_pixels(pixels, color_palette) 
     quantized_frame = quantized.reshape(num_frames, height, weight)
