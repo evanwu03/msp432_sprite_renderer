@@ -2,7 +2,8 @@
 
 import numpy as np
 
-def palette_bgr24_to_bgr565(palette24: list[int]) -> list[int]:
+def palette_bgr24_to_bgr565(palette24: np.ndarray) -> np.ndarray:
+
     palette565 = []
     for px in palette24:
         B = (px >> 16) & 0xFF
@@ -29,7 +30,7 @@ def generate_palette(bucket, num_colors=256):
     return median_cut_recurse(bucket, 0, target_depth)
 
 
-def median_cut_recurse(bucket, level, target_depth): 
+def median_cut_recurse(bucket, level, target_depth):
 
     if level == target_depth:
         return [averageColor(bucket)]
@@ -40,33 +41,27 @@ def median_cut_recurse(bucket, level, target_depth):
     right_colors = median_cut_recurse(upper_palette, level+1, target_depth)
 
     return left_colors + right_colors
-def split_bucket(pixels): 
+def split_bucket(pixels: np.ndarray) -> np.ndarray: 
 
-    b_min = min( (px >> 16) & 0xFF for px in pixels)
-    b_max = max( (px >> 16) & 0xFF for px in pixels)
-    g_min = min( (px >> 8)  & 0xFF for px in pixels)
-    g_max = max( (px >> 8)  & 0xFF for px in pixels)
-    r_min = min( (px & 0xFF) for px in pixels)
-    r_max = max( (px & 0xFF) for px in pixels)
+    key = None
 
-    b_range = b_max - b_min
-    g_range = g_max - g_min
-    r_range = r_max - r_min
+    B = (pixels >> 16) & 0xFF
+    G = (pixels >> 8)  & 0xFF
+    R = pixels         & 0xff
 
-    #print(f'min(B): {b_min}, max(B): {b_max}')
-    #print(f'min(G): {g_min}, max(B): {g_max}')
-    #print(f'min(B): {r_min}, max(B): {r_max}')
+    b_range = B.max() - B.min()
+    g_range = G.max() - G.min()
+    r_range = G.max() - R.min()
 
+    if b_range >= g_range and b_range >= r_range:
+        key = (pixels >> 16) & 0xFF     # blue
+    elif g_range >= r_range:
+        key = (pixels >> 8) & 0xFF      # green
+    else:
+        key = pixels & 0xFF             # red
 
-    if b_range >= g_range and b_range >= r_range: # Sort by blue 
-        #pixels.sort(key=lambda px: (px >> 16) & 0xFF)
-        pixels = sorted(pixels, key=lambda px: (px >> 16) & 0xFF)
-    elif g_range >= r_range: # Sort by green 
-        #pixels.sort(key=lambda px: (px >> 8) & 0xFF) 
-        pixels = sorted(pixels, key=lambda px: (px >> 8) & 0xFF)
-    elif r_range >= g_range: # Otherwise sort by red
-        #pixels.sort(key=lambda px: (px & 0xFF))
-        pixels = sorted(pixels, key=lambda px: (px & 0xFF))
+    # NumPy sort using a key
+    pixels = pixels[np.argsort(key, kind='stable')]
 
     lower, upper = np.array_split(pixels, 2)
 
