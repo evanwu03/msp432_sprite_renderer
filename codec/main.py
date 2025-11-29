@@ -48,7 +48,7 @@ def main():
     cv2.destroyAllWindows()
 
 
-    """ # Generate Color palette
+    # Generate Color palette
     pixels = np.concatenate([frame.flatten() for frame in frame_list])
 
     color_palette = generate_palette(pixels, 256)
@@ -57,7 +57,7 @@ def main():
  
     print(f'length of color palette: {len(color_palette)}')
     for color in range(len(color_palette)):
-        print(f'color_palette[{color}: {color_palette[color]:0X}]')  """
+        print(f'color_palette[{color}: {color_palette[color]:0X}]')  
 
  
     # Compress video
