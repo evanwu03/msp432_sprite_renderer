@@ -1,22 +1,19 @@
 
 
 
-import cv2 
 import numpy as np
 import time 
 
 
-from color_utils import Color_Resolution
-from color_utils import bgr24_to_int
-
-
 from quantizer import generate_palette
 from quantizer import palette_bgr24_to_bgr565
+from quantizer import quantize_pixels
+
 
 from encoder import compress_video
 
 from video import video_playback
-
+from video import extract_video_frames
 
 from config import *
 
@@ -24,46 +21,42 @@ def main():
 
     start_time = time.time()
 
+    #video_playback(FILEPATH)
 
-    cap = cv2.VideoCapture(PATH)
+    video = extract_video_frames(FILEPATH)
+    print(f'Video Resolution: {video.shape}')
 
-    print(f'FPS: {cap.get(cv2.CAP_PROP_FPS)}')      
-    #video_playback(cap)
-    
-
-    frame_list = []
-    while cap.isOpened(): 
-
-        ret, current = cap.read()
-        if not ret: 
-            print("Can't receive frame (stream end?). Exiting ...")
-            break
-        
-        #print(current.shape)
-        packed = bgr24_to_int(current)
-        
-        frame_list.append(packed)
-    
-    cap.release()
-    cv2.destroyAllWindows()
-
+    height = 128
+    weight = 128
+    num_frames = len(video)
 
     # Generate Color palette
-    pixels = np.concatenate([frame.flatten() for frame in frame_list])
+    pixels = np.concatenate([frame.flatten() for frame in video])
 
     color_palette = generate_palette(pixels, 256)
     color_palette = palette_bgr24_to_bgr565(color_palette)
-    color_palette = list(dict.fromkeys(color_palette))
- 
+    color_palette = np.array(list(dict.fromkeys(color_palette)), dtype=np.uint16)
+
+
+    quantized = quantize_pixels(pixels, color_palette) 
+    quantized_frame = quantized.reshape(num_frames, height, weight)
+
+    #print(f'Quantized Video Resolution: {quantized_frame.shape}')
+
+
+    """ print(f'Dimensions of quantized frames: {quantized_frame.shape}')
     print(f'length of color palette: {len(color_palette)}')
     for color in range(len(color_palette)):
-        print(f'color_palette[{color}: {color_palette[color]:0X}]')  
+        print(f'color_palette[{color}: {color_palette[color]:0X}]')   """
+    
 
- 
+    #print(quantized_frame)
+
+
     # Compress video
-    encoded_frames = compress_video(cap, PATH, Color_Resolution.COLOR_BGR444)
+    encoded_frames = compress_video(quantized_frame)
 
-
+    
     with open(ENCODED_BIN, "wb") as f:
         f.write(encoded_frames)
 

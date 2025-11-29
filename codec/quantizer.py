@@ -79,14 +79,51 @@ def split_bucket(pixels: np.ndarray) -> np.ndarray:
     return (lower, upper)
 
 
-def averageColor(pixel: np.ndarray) -> np.ndarray:
+def averageColor(pixels: np.ndarray) -> np.ndarray:
      
-     if len(pixel) == 0:
+     if len(pixels) == 0:
          print("Did not find any pixels to average")
          return 0
      
-     B = int(((pixel >> 16) & 0xFF).mean())
-     G = int(((pixel >> 8)  & 0xFF).mean())
-     R = int(( pixel        & 0xFF).mean())
+     B = int(((pixels >> 16) & 0xFF).mean())
+     G = int(((pixels >> 8)  & 0xFF).mean())
+     R = int(( pixels        & 0xFF).mean())
 
      return (B << 16) | (G << 8) | R
+
+
+
+def quantize_pixels(pixels: np.ndarray, palette: np.ndarray) -> np.ndarray:
+    # unpack
+
+    #print("pixels contain NaN:", np.isnan(pixels).any())
+    #print("palette contain NaN:", np.isnan(palette).any())
+
+
+    pR, pG, pB = unpack_rgb(pixels)
+    cR, cG, cB = unpack_rgb(palette)
+
+
+    # Compute squared distances using broadcasting:
+    #   (N,1) - (1,K) → (N,K) matrix
+ 
+    dist = np.sqrt(
+        (pR[:,None].astype(np.uint32) - cR[None,:].astype(np.uint32) )**2
+        + (pG[:,None].astype(np.uint32)  - cG[None,:].astype(np.uint32) )**2
+        + (pB[:,None].astype(np.uint32)  - cB[None,:].astype(np.uint32) )**2)
+        
+    if np.any(np.isnan(dist)):
+        raise ValueError("NaNs detected in distance matrix")
+
+
+    # pick closest palette color
+    indices = np.argmin(dist, axis=1).astype(np.uint8) # 256 colors → uint8 indices
+
+    return  indices
+
+
+def unpack_rgb(packed):
+    R = (packed & 0xFF).astype(np.int16)
+    G = ((packed >> 8) & 0xFF).astype(np.int16)
+    B = ((packed >> 16) & 0xFF).astype(np.int16)
+    return R, G, B

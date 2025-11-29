@@ -16,56 +16,48 @@ from config import *
 
 # Performs delta compression on a stream of frames and returns 
 # a list of frames
-def deltaEncode(cap: cv2.VideoCapture, color_resolution=Color_Resolution.COLOR_BGR565) -> np.ndarray:
-
-    frames = []
-
-    prev_frame = None
-
-    while cap.isOpened():
-        ret, current_frame = cap.read()
-
-        # if frame is read correctly ret is True
-        if not ret:
-            print("Can't receive frame (stream end?). Exiting ...")
-            break
+def deltaEncode(palette_indices: np.ndarray) -> np.ndarray:
 
 
-        # Convert from BGR to BGR565
-        #current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2BGR565)
-        #current_frame = bgr_to_bgr565(current_frame).astype(np.uint16)
+    deltas = []
 
-        if color_resolution == Color_Resolution.COLOR_BGR565:
-            current_frame = bgr_to_bgr565_frame(current_frame).astype(np.uint16)
-        elif color_resolution == Color_Resolution.COLOR_BGR444:
-            current_frame = bgr_to_bgr444_frame(current_frame).astype(np.uint16)
-        elif color_resolution == Color_Resolution.COLOR_BGR332: 
-            current_frame = bgr_to_bgr332_frame(current_frame).astype(np.uint16)
-        
-    
-        if prev_frame is None: 
-            #frames.append(current_frame)
-            prev_frame = current_frame
+    prev = None
+
+    for idx_frame in palette_indices: 
+
+        if prev is None:
+            deltas.append(idx_frame)
+            prev = idx_frame
             continue
 
         # Compute the delta frame as difference between current and previous frame
         # append it to list and update previous frame value
-        delta_frame = np.subtract(current_frame, prev_frame)
+        delta_frame = idx_frame.astype(np.int16) - prev.astype(np.int16)
+
+        deltas.append(delta_frame) 
+
+        prev = idx_frame
 
 
-        frames.append(delta_frame) 
+    return deltas
 
-        prev_frame = current_frame
-
-    cap.release()
-    return frames
-
-
-
-
+    
 def zigzagEncode(arr: np.ndarray) -> np.ndarray:
-    return (arr << 1) ^ (arr >> 15)
+    return ((arr << 1) ^ (arr >> 15)).astype(np.uint8)
 
+
+""" def zigzagEncode(arr: np.ndarray) -> np.ndarray: 
+
+    zigzag = []
+    for i in range(len(arr)):
+        zigzag.append(zigzagEncodeSingle(arr[i]))
+        
+    return np.array(zigzag, dtype=np.uint16)
+
+def zigzagEncodeSingle(val) :
+    if val < 0:
+        return - 2 * val  - 1
+    return 2 * val  """
 
 
 def rleEncode(values: np.ndarray) -> np.ndarray:
@@ -130,15 +122,11 @@ def encodeUint16(arr: int) -> bytearray:
 
 
 
-def compress_video(cap: cv2.VideoCapture, filepath, color_resolution: Color_Resolution) -> bytearray:
-
-    cap.open(filepath)
+def compress_video(frames: np.ndarray) -> bytearray:
 
 
     #Delta Encoding
-    delta_frames = deltaEncode(cap, Color_Resolution.COLOR_BGR332) # Need to edit so first frame is also returned
-    delta_flatten = np.concatenate([frame.flatten() for frame in delta_frames])
-
+    delta_frames = deltaEncode(frames) # Need to edit so first frame is also returned
 
     # Dumps delta frames in a txt file
     with open(FRAME_TXT_DUMP, "w") as f:
@@ -152,21 +140,20 @@ def compress_video(cap: cv2.VideoCapture, filepath, color_resolution: Color_Reso
     # Pixel Level RLE encoding scheme without tile compression 
     # ========================================================
 
-    # Before encoding
-    total_frames = len(delta_frames)
-    print(f'Total number of frames: {total_frames}')
-    print('Before variable length encoding')
-    print(f'Total number of pixels: {len(delta_flatten)}')
-    print(f'Total number of bytes: {len(delta_flatten)*2}\n')
-
-
 
     # flatten frames in 1D pixel array represented as uint16
     delta_pixels = np.concatenate([frame.flatten() for frame in delta_frames])
     delta_pixels = delta_pixels.astype(np.int16)
     delta_pixels.tofile(DELTA_BIN) 
 
-    
+    # Before encoding
+    total_frames = len(delta_frames)
+    print(f'Total number of frames: {total_frames}')
+    print('Before variable length encoding')
+    print(f'Total number of pixels: {len(delta_pixels)}')
+    print(f'Total number of bytes: {len(delta_pixels)*2}\n')
+
+
      # Perform Zigzag -> RLE -> VLE chain
     zigzag_vals     = zigzagEncode(delta_pixels)
     rle_vals        = rleEncode(zigzag_vals)
