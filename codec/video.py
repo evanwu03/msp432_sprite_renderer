@@ -1,5 +1,7 @@
 
 import cv2
+import time 
+
 
 # Plays back video on screen
 def video_playback(cap: cv2.VideoCapture) -> None:

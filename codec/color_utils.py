@@ -1,6 +1,5 @@
 
 
-import cv2
 import numpy as np
 from enum import Enum
 
@@ -11,7 +10,7 @@ class Color_Resolution(Enum):
 
 
 # Converts a frame in BGR888 -> BGR565
-def bgr_to_bgr565_frame(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
+def bgr_to_bgr565_frame(bgr: np.ndarray) -> np.ndarray:
 
     blue  = (bgr[:, :, 0] >> 3)
     green = (bgr[:, :, 1] >> 2)
@@ -23,7 +22,7 @@ def bgr_to_bgr565_frame(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
 
 
 # Converts a frame in BGR888 -> BGR565
-def bgr_to_bgr444_frame(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
+def bgr_to_bgr444_frame(bgr: np.ndarray) -> np.ndarray:
 
     blue  = (bgr[:, :, 0] >> 4)
     green = (bgr[:, :, 1] >> 4)
@@ -35,7 +34,7 @@ def bgr_to_bgr444_frame(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
 
 
 # 8 bit palette quantization using uniform scaling. Want to replace this with more optimized methods eventually
-def bgr_to_bgr332_frame(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
+def bgr_to_bgr332_frame(bgr: np.ndarray) -> np.ndarray:
 
     blue  = (bgr[:, :, 0] >> 5)
     green = (bgr[:, :, 1] >> 5)
@@ -46,7 +45,7 @@ def bgr_to_bgr332_frame(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
     return bgr444
 
 
-def bgr24_to_int(bgr: cv2.typing.MatLike) -> cv2.typing.MatLike:
+def bgr24_to_int(bgr: np.ndarray) -> np.ndarray:
 
     blue  = bgr[:, :, 0].astype(np.uint32)
     green = bgr[:, :, 1].astype(np.uint32)

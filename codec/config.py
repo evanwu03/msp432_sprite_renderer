@@ -1,0 +1,21 @@
+
+import os
+
+# Filepaths
+FILENAME = 'ordinary.mp4'
+#FILENAME = 'ordinary_12fps.mp4'
+#FILENAME = 'ordinary_96x96_12fps.mp4'
+#FILENAME = 'kanade_128x128.mp4'
+#FILENAME = 'ryo_yamada_128x128.mp4'
+#FILENAME = 'ryo_yamada_128x128_12fps.mp4'
+#FILENAME = 'kikuri.mp4'
+
+BASE = os.path.dirname(os.path.abspath(__file__))
+PATH = os.path.join(BASE, 'videos', FILENAME)
+FRAME_TXT_DUMP = os.path.join(BASE, 'output', 'delta.txt')
+DELTA_BIN = os.path.join(BASE, 'output', 'delta.bin')
+ENCODED_TXT_DUMP = os.path.join(BASE, 'output', 'encoded.txt')
+ENCODED_BIN  = os.path.join(BASE, 'output', 'encoded.bin')
+DECODED_TXT_DUMP = os.path.join(BASE, 'output', 'decoded_pixels.txt')
+DECODED_BIN = os.path.join(BASE, 'output', 'decoded_pixels.bin')
+
