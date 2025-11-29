@@ -19,6 +19,10 @@ from encoder import zigzagEncode
 from encoder import rleEncode
 from encoder import encodeUint16
 
+
+from video import video_playback
+
+
 # Filepaths
 FILENAME = 'ordinary.mp4'
 #FILENAME = 'ordinary_12fps.mp4'
@@ -36,31 +40,6 @@ ENCODED_TXT_DUMP = os.path.join(BASE, 'output', 'post_vle.txt')
 ENCODED_BIN  = os.path.join(BASE, 'output', 'post_vle.bin')
 DECODED_TXT_DUMP = os.path.join(BASE, 'output', 'decoded_pixels.txt')
 DECODED_BIN = os.path.join(BASE, 'output', 'decoded_pixels.bin')
-
-
-
-# Plays back video on screen
-def video_playback(cap: cv2.VideoCapture) -> None:
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    delay = 1/fps
-
-    while cap.isOpened():
-        ret, frame = cap.read()
-        
-        # if frame is read correctly ret is True
-        if not ret:
-            print("Can't receive frame (stream end?). Exiting ...")
-            break
-
-        cv2.imshow('frame', frame)
-        if cv2.waitKey(1) == ord('q'):
-            print('Ending playback...')
-            break
-
-        time.sleep(delay)
-
-    cap.release()
-    cv2.destroyAllWindows()
 
 
 
@@ -97,18 +76,18 @@ def main():
 
 
 
-     # Generate Color palette
+    """    # Generate Color palette
     pixels = np.concatenate([frame.flatten() for frame in frame_list])
 
     color_palette = generate_palette(pixels, 256)
     color_palette = palette_bgr24_to_bgr565(color_palette)
     color_palette = list(dict.fromkeys(color_palette))
-
+ 
 
 
     print(f'length of color palette: {len(color_palette)}')
     for color in range(len(color_palette)):
-        print(f'color_palette[{color}: {color_palette[color]:0X}]') 
+        print(f'color_palette[{color}: {color_palette[color]:0X}]')  """
 
  
     cap.open(PATH)
@@ -145,9 +124,9 @@ def main():
     
 
      # Perform Zigzag -> RLE -> VLE chain
-    zigzag_vals = [zigzagEncode(px) for px in delta_pixels]
+    zigzag_vals = np.array([zigzagEncode(px) for px in delta_pixels])
 
-    rle_vals    = rleEncode(zigzag_vals)
+    rle_vals    = np.array(rleEncode(zigzag_vals))
     pixels_with_vle = bytearray().join(
         encodeUint16(px) for px in rle_vals
     )
