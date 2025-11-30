@@ -68,7 +68,7 @@ def rleEncode(values: np.ndarray) -> np.ndarray:
     result = []
     i = int(0) 
     n = len(values)
-    run_len = 0
+    run_len = np.uint8(0)
 
     while i < n:
 
@@ -77,14 +77,18 @@ def rleEncode(values: np.ndarray) -> np.ndarray:
         if cur == 0:
 
             run_len = 1
-            while (i+run_len < n) and (int(values[i+run_len]) == 0):
+            while (i+run_len < n) and (run_len < 128) and (int(values[i+run_len]) == 0) :
                 run_len += 1
 
             # Append (val, count)
 
             if run_len >= 3:
-                result.append(cur)
+
+                run_len |= 0x80
                 result.append(run_len)
+                result.append(cur)
+                
+
             else: 
                 result.append(cur)
 

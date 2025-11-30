@@ -6,7 +6,7 @@ import numpy as np
 from color_utils import bgr24_to_int
 
 # Plays back video on screen
-def video_playback(filepath) -> None:
+def video_playback(filepath: str) -> None:
 
     cap = cv2.VideoCapture(filepath)
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -61,7 +61,7 @@ def video_playback(filepath) -> None:
  """
 
 
-def extract_video_frames(filepath) -> np.ndarray:
+def extract_video_frames(filepath: str) -> np.ndarray:
     cap = cv2.VideoCapture(filepath)
 
     frames = []
