@@ -13,7 +13,7 @@ def palette_bgr24_to_bgr565(palette24: np.ndarray) -> np.ndarray:
     R5 = R >> 3
    
     bgr565 = (B5 << 11) | (G6 << 5) | R5
-    return bgr565
+    return bgr565.astype(np.uint16)
     
 
 

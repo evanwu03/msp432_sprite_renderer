@@ -33,6 +33,8 @@ def main():
     # Generate Color palette
     pixels = np.concatenate([frame.flatten() for frame in video])
 
+    print(f'Raw file size in RGB24: {len(pixels)*4}')
+
     color_palette = generate_palette(pixels, 256)
     color_palette = palette_bgr24_to_bgr565(color_palette)
     
