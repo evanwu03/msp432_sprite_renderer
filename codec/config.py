@@ -22,6 +22,11 @@ FILENAME = 'bocchi.mp4'
 #FILENAME = 'idk_10fps.mp4'
 #FILENAME = 'kaela.mp4'
 #FILENAME = 'kaela_20fps.mp4'
+#FILENAME = 'kaela_12fps.mp4'
+#FILENAME  = 'raden.mp4'
+#FILENAME  = 'raden_20fps.mp4'
+#FILENAME  = 'raden_12fps.mp4'
+
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 FILEPATH = os.path.join(BASE, 'videos', FILENAME)

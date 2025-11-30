@@ -12,7 +12,7 @@ for v in out:
 
 print('\n')
 
-test_data = np.array([0,0,0,5,6,0,0], dtype=np.uint16)
+test_data = np.array([0,0,0,5,6,0,0,0], dtype=np.uint16)
 out = rleEncode(test_data)
 
 print(f'Test2:')

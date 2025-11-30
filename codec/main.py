@@ -23,29 +23,33 @@ def main():
 
     video_playback(FILEPATH)
 
+
     video = extract_video_frames(FILEPATH)
     print(f'Video Resolution: {video.shape}')
 
+    # Video Resolution specs
     height = video.shape[1]
     weight = video.shape[2]
     num_frames = len(video)
 
-    # Generate Color palette
+    # Flatten to 1D list of pixels
     pixels = np.concatenate([frame.flatten() for frame in video])
-
-    print(f'Raw file size in RGB24: {len(pixels)*4}')
-
+    raw_size_bytes = len(pixels)*4
 
 
-    color_palette = generate_palette(pixels, 128)
+    print(f'Raw file size in RGB24: {raw_size_bytes}')
+
+
+    # Generate Color palette
+    color_palette = generate_palette(pixels, 64)
     color_palette = palette_bgr24_to_bgr565(color_palette)
 
 
     #color_palette = np.array(list(dict.fromkeys(color_palette)), dtype=np.uint16)
-    #color_palette = color_palette[np.argsort(color_palette, kind='quicksort')] # Naive sorting of colors
+    ##color_palette = color_palette[np.argsort(color_palette, kind='quicksort')] # Naive sorting of colors
     
     """ perm = np.random.permutation(len(color_palette)) # Scrambling color list to see effect on file size
-    color_palette = color_palette[perm] """
+    color_palette = color_palette[perm]  """
 
     quantization_start = time.time()
     quantized = quantize_pixels(pixels, color_palette) 
@@ -62,12 +66,10 @@ def main():
         print(f'color_palette[{color}: {color_palette[color]:0X}]')   """
     
 
-    #print(quantized_frame)
-
-
     # Compress video
     encoded_frames = compress_video(quantized_frame)
 
+    print(f'Total Compression Ratio: {raw_size_bytes/len(encoded_frames):.2f}')
     
     with open(ENCODED_BIN, "wb") as f:
         f.write(encoded_frames)

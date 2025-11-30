@@ -3,7 +3,7 @@
 
 import numpy as np
 from config import *
-
+from decoder import zigzagDecode
 
 # Performs delta compression on a stream of frames and returns 
 # a list of frames
@@ -52,107 +52,77 @@ def zigzagEncodeSingle(val) :
  """
 
 
-RLE_SYMBOLS = [0,1,2,3,4,5]
-
 def rleEncode(values: np.ndarray) -> np.ndarray:
-
     result = []
-    i = int(0) 
     n = len(values)
-    
-    run_len = np.uint8(0)
-    LITERAL_MARKER = 0x00
-    RUN_LEN_MARKER = 0x80
+    i = 0
+
+    RUN_HEADER = 0x80
+    LITERAL_HEADER = 0x00
+
 
     while i < n:
+        # =============================================================
+        # Check for encoded run (repetition of same value)
+        # =============================================================
+        run_val = int(values[i])
+        run_len = 1
 
-        cur = int(values[i])
 
-        if cur == 0:
+        while((i + run_len < n) and (run_len < 127) and (values[i+run_len] == run_val)):
+            run_len += 1
+    
 
-            run_len = 1
-            while (i+run_len < n) and (run_len < 127) and (int(values[i+run_len]) == 0) :
-                run_len += 1
+        if run_len >= 2: 
 
-            # Append (val, count)
-
-            if run_len >= 3:
-
-                 # Set the run length marker
-                run_len_marker = RUN_LEN_MARKER | run_len
-                result.append(run_len_marker)
-                result.append(cur)
-                
-
-            else: 
-
-                for j in range(run_len):
-                    result.append(LITERAL_MARKER)
-                    result.append(cur)
-
+            header = RUN_HEADER | run_len
+            result.append(header)
+            result.append(run_val)
             i += run_len
+            continue
 
-        else: 
-            result.append(LITERAL_MARKER)
-            result.append(cur)
-            i+=1
+        # =============================================================
+        # Otherwise: LITERAL RUN (collect until next repeated run)
+        # =============================================================
+
+        literal_count = 1
+        lit_start = i
+
+        while i + literal_count < n and literal_count < 127: 
+
+  
+            next_idx = lit_start + literal_count
+
+            if  (next_idx < n - 1) and (int(values[next_idx]) == values[next_idx+1]):
+                break
+
+            literal_count += 1
+       
+        header = LITERAL_HEADER | literal_count 
+        result.append(header)
+
+        for j in range(0, literal_count):
+            result.append(values[i+j])
 
 
-    return np.array(result, dtype=np.uint32) 
+        i += literal_count
+
+    return np.array(result, dtype=np.uint8)
 
 
 """ def rle_vertical_replication(values: np.ndarray) -> np.ndarray:
 
-
-
     result = []
     i = int(0) 
     n = len(values)
     run_len = np.uint8(0)
 
-
     while i < n: 
 
-        cur = int(values[i])
-        scanline = np
-
+    
     return 
  """
 
-
-
-""" def rleEncode(values: np.ndarray) -> np.ndarray:
-
-    result = []
-    i = int(0) 
-    n = len(values)
-    run_len = int(0)
-
-    while i < n:
-
-        cur = int(values[i])
-
-        if cur in RLE_SYMBOLS:
-
-            run_len = 1
-            while (i+run_len < n) and (int(values[i+run_len]) == cur):
-                run_len += 1
-
-            if run_len >= 3:
-                # Append (val, count)
-                result.append(cur)
-                result.append(run_len)
-            else: 
-                result.append(cur)
-            
-            i += run_len
-
-        else: 
-            result.append(cur)
-            i+=1
-
-
-    return np.array(result, dtype=np.uint32)  """
 
 
 # Variable length encoding
@@ -202,10 +172,9 @@ def compress_video(frames: np.ndarray) -> bytearray:
             f.write("\n\n")
 
 
-    # ========================================================
-    # Pixel Level RLE encoding scheme without tile compression 
-    # ========================================================
-
+    # ==============================
+    # Byte Level RLE encoding scheme
+    # ==============================
 
     # flatten frames in 1D pixel array represented as uint16
     delta_pixels = np.concatenate([frame.flatten() for frame in delta_frames])
@@ -222,13 +191,37 @@ def compress_video(frames: np.ndarray) -> bytearray:
 
     # Perform Zigzag -> RLE -> VLE chain
     zigzag_vals     = zigzagEncode(delta_pixels)
-    rle_vals        = rleEncode(zigzag_vals)
+    rle_vals       = rleEncode(zigzag_vals)
     pixels_with_vle = variableLengthEncode(rle_vals)
 
 
-    # Debugging information
-    print('After variable length encoding')
-    print(f'Total number of bytes: {len(pixels_with_vle)}')
+    """ # Debugging information
+    zig_zag_debug = zigzag_vals.reshape(total_frames, 128, 128)
+    with open("output/zigzag.txt", "w") as f:
+        for j, frame in enumerate(zig_zag_debug):
+            f.write(f"# --- Frame {j} ---\n")
+            np.savetxt(f, frame, fmt="%x")
+            f.write("\n\n")
+
+    rle_vals.tofile("output/rle.bin")
+
+    with open('output/rle.txt', "w") as f:
+        for i in range(0, len(rle_vals), 128):
+            row = rle_vals[i:i+128]
+            f.write(" ".join(hex(x) for x in row) + "\n") """
 
 
-    return pixels_with_vle
+    """ decoded_zig = zigzagDecode(zigzag_vals).reshape(total_frames, 128, 128)
+    with open("output/decoded_zig.txt", "w") as f:
+        for j, frame in enumerate(decoded_zig):
+            f.write(f"# --- Frame {j} ---\n")
+            np.savetxt(f, frame, fmt="%x")
+            f.write("\n\n") """
+
+
+    print(f'Total number of bytes after RLE: {len(rle_vals)}')
+    print(f'Total number of bytes if processed with VLE: {len(pixels_with_vle)}')
+
+
+    #return pixels_with_vle
+    return rle_vals # Seems applying VLE is unecessary now

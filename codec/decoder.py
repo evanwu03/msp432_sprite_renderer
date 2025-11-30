@@ -1,7 +1,10 @@
 
+import numpy as np
 
-def zigzagDecode(x: int) -> int:
-    return (x >> 1) ^ (-(x&1))
+
+
+def zigzagDecode(arr: np.ndarray) -> np.ndarray:
+    return (arr.astype(np.int16) >> 1) ^ (-(arr.astype(np.int16)&1))
 
 
 def decodeUint16(stream: bytearray, pos: int) -> tuple[int, int]: 
