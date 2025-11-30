@@ -22,3 +22,11 @@ for v in out:
 print('\n')
 
 
+test_data = np.array([0,0,0,128,6,128,0], dtype=np.uint16)
+out = rleEncode(test_data)
+
+print(f'Test3:')
+for v in out:
+    print(v, end=" ")
+
+print('\n')
