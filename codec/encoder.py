@@ -1,16 +1,7 @@
 
 
 
-import cv2 
 import numpy as np
-
-
-from color_utils import Color_Resolution
-from color_utils import bgr_to_bgr332_frame
-from color_utils import bgr_to_bgr444_frame
-from color_utils import bgr_to_bgr565_frame
-
-
 from config import *
 
 
@@ -69,7 +60,7 @@ def rleEncode(values: np.ndarray) -> np.ndarray:
     i = int(0) 
     n = len(values)
     run_len = np.uint8(0)
-
+    
     while i < n:
 
         cur = int(values[i])
@@ -77,20 +68,23 @@ def rleEncode(values: np.ndarray) -> np.ndarray:
         if cur == 0:
 
             run_len = 1
-            while (i+run_len < n) and (run_len < 128) and (int(values[i+run_len]) == 0) :
+            while (i+run_len < n) and (run_len < 127) and (int(values[i+run_len]) == 0) :
                 run_len += 1
 
             # Append (val, count)
 
             if run_len >= 3:
 
-                run_len |= 0x80
-                result.append(run_len)
+                 # Set the run length marker
+                run_len_marker = 0x80 | run_len
+                result.append(run_len_marker)
                 result.append(cur)
                 
 
             else: 
-                result.append(cur)
+
+                for j in range(run_len):
+                    result.append(cur)
 
             i += run_len
 
@@ -100,6 +94,27 @@ def rleEncode(values: np.ndarray) -> np.ndarray:
 
 
     return np.array(result, dtype=np.uint32) 
+
+
+""" def rle_vertical_replication(values: np.ndarray) -> np.ndarray:
+
+
+
+    result = []
+    i = int(0) 
+    n = len(values)
+    run_len = np.uint8(0)
+
+
+    while i < n: 
+
+        cur = int(values[i])
+        scanline = np
+
+    return 
+ """
+
+
 
 """ def rleEncode(values: np.ndarray) -> np.ndarray:
 
@@ -200,7 +215,7 @@ def compress_video(frames: np.ndarray) -> bytearray:
     print(f'Total number of bytes: {len(delta_pixels)*2}\n')
 
 
-     # Perform Zigzag -> RLE -> VLE chain
+    # Perform Zigzag -> RLE -> VLE chain
     zigzag_vals     = zigzagEncode(delta_pixels)
     rle_vals        = rleEncode(zigzag_vals)
     pixels_with_vle = variableLengthEncode(rle_vals)

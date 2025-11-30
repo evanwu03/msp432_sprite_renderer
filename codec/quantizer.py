@@ -1,6 +1,7 @@
 
 
 import numpy as np
+import time 
 
 def palette_bgr24_to_bgr565(palette24: np.ndarray) -> np.ndarray:
 
@@ -104,26 +105,48 @@ def quantize_pixels(pixels: np.ndarray, palette: np.ndarray) -> np.ndarray:
     cR, cG, cB = unpack_rgb(palette)
 
 
+    pB = pB.astype(np.uint32)
+    pG = pG.astype(np.uint32)
+    pR = pR.astype(np.uint32)
+
+    cB = cB.astype(np.uint32)
+    cG = cG.astype(np.uint32)
+    cR = cR.astype(np.uint32)
+   
+
+
+
     # Compute squared distances using broadcasting:
-    #   (N,1) - (1,K) → (N,K) matrix
- 
+    #(N,1) - (1,K) → (N,K) matrix
+    euclidean_start = time.time()
     dist = np.sqrt(
-        (pR[:,None].astype(np.uint32) - cR[None,:].astype(np.uint32) )**2
-        + (pG[:,None].astype(np.uint32)  - cG[None,:].astype(np.uint32) )**2
-        + (pB[:,None].astype(np.uint32)  - cB[None,:].astype(np.uint32) )**2)
-        
+          (pR[:,None]  - cR[None,:]    )**2
+        + (pG[:,None]  - cG[None,:] )**2
+        + (pB[:,None]  - cB[None,:] )**2)
+    
+    euclidean_end = time.time()
+
+    #print(f'pB dimensions: {pB.shape}')
+    #print(f'cB dimensions: {cB.shape}')
+    #print(f'dist matrix dimensions: {dist.shape}')
+
+
+    print(f'Time to compute euclidean distances: {euclidean_end-euclidean_start:.2f}')
+  
     if np.any(np.isnan(dist)):
         raise ValueError("NaNs detected in distance matrix")
 
-
+    start = time.time()
     # pick closest palette color
     indices = np.argmin(dist, axis=1).astype(np.uint8) # 256 colors → uint8 indices
+    end = time.time()
+    print(f'Time to map indices: {end-start:.2f}')
 
     return  indices
 
 
-def unpack_rgb(packed):
-    R = (packed & 0xFF).astype(np.int16)
-    G = ((packed >> 8) & 0xFF).astype(np.int16)
-    B = ((packed >> 16) & 0xFF).astype(np.int16)
+def unpack_rgb(packed): # Needs type hint
+    R = (packed & 0xFF).astype(np.uint16)
+    G = ((packed >> 8) & 0xFF).astype(np.uint16)
+    B = ((packed >> 16) & 0xFF).astype(np.uint16)
     return R, G, B
