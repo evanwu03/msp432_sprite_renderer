@@ -41,7 +41,7 @@ def main():
 
 
     # Generate Color palette
-    color_palette = generate_palette(pixels, 64)
+    color_palette = generate_palette(pixels, 256)
     color_palette = palette_bgr24_to_bgr565(color_palette)
 
 
