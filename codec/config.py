@@ -11,10 +11,13 @@ import os
 #FILENAME = 'kanade_128x128_12fps.mp4'
 #FILENAME = 'ryo_yamada_128x128.mp4'
 #FILENAME = 'ryo_yamada_128x128_12fps.mp4'
+FILENAME  = 'ryo2.mp4'
 #FILENAME = 'kikuri.mp4'
+#FILENAME = 'kikuri_10fps.mp4'
+#FILENAME = 'kikuri_20fps.mp4'
 #FILENAME = 'ragebaited.mp4'
 #FILENAME = 'bocchi.mp4'
-FILENAME = 'idk_10fps.mp4'
+#FILENAME = 'idk_10fps.mp4'
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 FILEPATH = os.path.join(BASE, 'videos', FILENAME)

@@ -60,25 +60,34 @@ def zigzagEncodeSingle(val) :
     return 2 * val 
  """
 
+
+RLE_SYMBOLS = [0,1,2,3,4,5]
+
 def rleEncode(values: np.ndarray) -> np.ndarray:
 
     result = []
-    i = 0 
+    i = int(0) 
     n = len(values)
     run_len = 0
 
     while i < n:
 
-        cur = values[i]
+        cur = int(values[i])
 
         if cur == 0:
+
             run_len = 1
-            while (i+run_len < n) and (values[i+run_len] == 0):
+            while (i+run_len < n) and (int(values[i+run_len]) == 0):
                 run_len += 1
 
             # Append (val, count)
-            result.append(cur)
-            result.append(run_len)
+
+            if run_len >= 3:
+                result.append(cur)
+                result.append(run_len)
+            else: 
+                result.append(cur)
+
             i += run_len
 
         else: 
@@ -87,6 +96,39 @@ def rleEncode(values: np.ndarray) -> np.ndarray:
 
 
     return np.array(result, dtype=np.uint32) 
+
+""" def rleEncode(values: np.ndarray) -> np.ndarray:
+
+    result = []
+    i = int(0) 
+    n = len(values)
+    run_len = int(0)
+
+    while i < n:
+
+        cur = int(values[i])
+
+        if cur in RLE_SYMBOLS:
+
+            run_len = 1
+            while (i+run_len < n) and (int(values[i+run_len]) == cur):
+                run_len += 1
+
+            if run_len >= 3:
+                # Append (val, count)
+                result.append(cur)
+                result.append(run_len)
+            else: 
+                result.append(cur)
+            
+            i += run_len
+
+        else: 
+            result.append(cur)
+            i+=1
+
+
+    return np.array(result, dtype=np.uint32)  """
 
 
 # Variable length encoding
