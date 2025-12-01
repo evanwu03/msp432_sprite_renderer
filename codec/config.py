@@ -3,7 +3,7 @@ import os
 
 # Filepaths
 #FILENAME = 'ordinary.mp4'
-#FILENAME = 'ordinary_12fps.mp4'
+FILENAME = 'ordinary_12fps.mp4'
 #FILENAME = 'ordinary_10fps.mp4'
 #FILENAME = 'ordinary_96x96_12fps.mp4'
 #FILENAME = 'ordinary_96x96_10fps.mp4'
@@ -17,7 +17,7 @@ import os
 #FILENAME = 'kikuri.mp4'
 #FILENAME = 'kikuri_10fps.mp4'
 #FILENAME = 'kikuri_20fps.mp4'
-FILENAME = 'ragebaited.mp4'
+#FILENAME = 'ragebaited.mp4'
 #FILENAME = 'bocchi.mp4'
 #FILENAME = 'idk_10fps.mp4'
 #FILENAME = 'kaela.mp4'

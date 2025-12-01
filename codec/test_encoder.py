@@ -7,8 +7,8 @@ out = rleEncode(test_data)
 
 print(f'Test1:')
 for v in out:
-    print(hex(v), end=" ")
-    #print(v, end=" ")
+    #print(hex(v), end=" ")
+    print(v, end=" ")
 
 print('\n')
 

@@ -32,34 +32,6 @@ def video_playback(filepath: str) -> None:
     cv2.destroyAllWindows()
 
 
-""" def extract_video_frames(filepath) -> np.ndarray:
-
-    cap = cv2.VideoCapture(filepath)
-
-    print(f'FPS: {cap.get(cv2.CAP_PROP_FPS)}')      
-    #video_playback(cap)
-    
-
-    frame_list = []
-    while cap.isOpened(): 
-
-        ret, current = cap.read()
-        if not ret: 
-            print("Can't receive frame (stream end?). Exiting ...")
-            break
-        
-        #print(current.shape)
-        packed = bgr24_to_int(current)
-        
-        frame_list.append(packed)
-    
-    cap.release()
-    cv2.destroyAllWindows()
-
-    
-    return frame_list 
- """
-
 
 def extract_video_frames(filepath: str) -> np.ndarray:
     cap = cv2.VideoCapture(filepath)
