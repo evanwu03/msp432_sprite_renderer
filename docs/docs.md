@@ -58,7 +58,14 @@ I think before we even touch the MSP432, we need a tool that:
 - Also need to start writing a script to convert the generated bin files to a C style array
 - Currently exploring palette quantization techniques such as K-means and Median cut. My method currently just naively truncate bits to fit them into 8, 12 and 16 bits but no statistical methods are employed to cluster similar colors together. 
 
-
-#20251129
+# 20251129
   
 I noticed throughout this project I have been slowly adding new pieces to the compression pipeline I think for me it started with learning delta compression, then learning VLE To compact bytes, then applying RLE to exploit the temporal behavior from delta compression and zigzag encoding to support VLE by mapping all negative numbers to positive ones. After all of that I supplemented the system with a color quantizer to reduce the RGB down to 8 bits/256 colors. With that said and done the performance was getting pretty good, but that's when I solved the issue with my RLE by adding run length maximums and adding a control bit to mark starts of run. Now we have looped back and are now optimizing the RLE with vertical replication
+
+# 20251219
+
+Goals for today are to: 
+- Add frame boundaries in my run length encoder  
+- develop python implementation of decoder
+- Write utility to cocnvert encoded video to a C-style array
+- Optimize euclidean distance calculaitons (they are slow!)
