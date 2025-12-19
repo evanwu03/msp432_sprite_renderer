@@ -3,7 +3,6 @@
 
 import numpy as np
 from config import *
-from decoder import zigzagDecode
 
 # Performs delta compression on a stream of frames and returns 
 # a list of frames

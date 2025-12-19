@@ -51,11 +51,11 @@ def main():
     """ perm = np.random.permutation(len(color_palette)) # Scrambling color list to see effect on file size
     color_palette = color_palette[perm]  """
 
-    quantization_start = time.time()
+    quantization_start_time = time.time()
     quantized = quantize_pixels(pixels, color_palette) 
     quantized_frame = quantized.reshape(num_frames, height, weight)
-    quantization_finish = time.time()
-    print(f'Total quantization time: {(quantization_finish-quantization_start):.2f}')
+    quantization_finish_time = time.time()
+    print(f'Total quantization time: {(quantization_finish_time-quantization_start_time):.2f}')
 
     #print(f'Quantized Video Resolution: {quantized_frame.shape}')
 

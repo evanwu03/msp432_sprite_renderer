@@ -68,4 +68,4 @@ Goals for today are to:
 - Add frame boundaries in my run length encoder  
 - develop python implementation of decoder
 - Write utility to cocnvert encoded video to a C-style array
-- Optimize euclidean distance calculaitons (they are slow!)
+- ~~Optimize euclidean distance calculaitons (they are slow!)~~ We achieved about 2x speedup by removing the np.sqrt() and precomputing norms

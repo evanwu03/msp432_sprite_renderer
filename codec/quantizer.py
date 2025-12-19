@@ -105,33 +105,47 @@ def quantize_pixels(pixels: np.ndarray, palette: np.ndarray) -> np.ndarray:
     cR, cG, cB = unpack_rgb(palette)
 
 
-    pB = pB.astype(np.uint32)
-    pG = pG.astype(np.uint32)
-    pR = pR.astype(np.uint32)
+    pB = pB.astype(np.float32)
+    pG = pG.astype(np.float32)
+    pR = pR.astype(np.float32)
 
-    cB = cB.astype(np.uint32)
-    cG = cG.astype(np.uint32)
-    cR = cR.astype(np.uint32)
+    cB = cB.astype(np.float32)
+    cG = cG.astype(np.float32)
+    cR = cR.astype(np.float32)
    
 
+    P = np.stack([pR, pG, pB], axis=1).astype(np.float32)
+    C = np.stack([cR, cG, cB], axis=1).astype(np.float32) 
 
+    # Precompute norms
+    P2 = np.sum(P*P, axis=1)[:, None] # (N,1)
+    C2 = np.sum(C*C, axis=1)[None, :] # (1, K)
+
+    start = time.time()
+    dist2 = P2 + C2 - 2.0 * (P @ C.T)
+    end = time.time()
+
+    if np.any(np.isnan(dist2)):
+        raise ValueError("NaNs detected in distance matrix")
+    
+    indices = np.argmin(dist2, axis=1).astype(np.uint8)
+
+    print(f'Time to compute euclidean distances: {end-start:.2f}')
 
     # Compute squared distances using broadcasting:
     #(N,1) - (1,K) → (N,K) matrix
-    euclidean_start = time.time()
+    """ euclidean_start = time.time()
     dist = np.sqrt(
           (pR[:,None]  - cR[None,:]    )**2
         + (pG[:,None]  - cG[None,:] )**2
-        + (pB[:,None]  - cB[None,:] )**2)
-    
-    euclidean_end = time.time()
+        + (pB[:,None]  - cB[None,:] )**2) 
+    euclidean_end = time.time() """
 
     #print(f'pB dimensions: {pB.shape}')
     #print(f'cB dimensions: {cB.shape}')
     #print(f'dist matrix dimensions: {dist.shape}')
 
-
-    print(f'Time to compute euclidean distances: {euclidean_end-euclidean_start:.2f}')
+    """ print(f'Time to compute euclidean distances: {euclidean_end-euclidean_start:.2f}')
   
     if np.any(np.isnan(dist)):
         raise ValueError("NaNs detected in distance matrix")
@@ -141,6 +155,7 @@ def quantize_pixels(pixels: np.ndarray, palette: np.ndarray) -> np.ndarray:
     indices = np.argmin(dist, axis=1).astype(np.uint8) # 256 colors → uint8 indices
     end = time.time()
     print(f'Time to map indices: {end-start:.2f}')
+     """
 
     return  indices
 
