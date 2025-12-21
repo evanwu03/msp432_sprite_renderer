@@ -159,6 +159,7 @@ def encodeUint16(arr: int) -> bytearray:
 
 def compress_video(frames: np.ndarray) -> bytearray:
 
+    compressed_frames = bytearray()
 
     #Delta Encoding
     delta_frames = deltaEncode(frames) # Need to edit so first frame is also returned
@@ -175,52 +176,23 @@ def compress_video(frames: np.ndarray) -> bytearray:
     # Byte Level RLE encoding scheme
     # ==============================
 
-    # flatten frames in 1D pixel array represented as uint16
-    delta_pixels = np.concatenate([frame.flatten() for frame in delta_frames])
-    delta_pixels = delta_pixels.astype(np.int16)
-    delta_pixels.tofile(DELTA_BIN) 
-
     # Before encoding
-    total_frames = len(delta_frames)
-    print(f'Total number of frames: {total_frames}')
-    print('Before variable length encoding')
-    print(f'Total number of pixels: {len(delta_pixels)}')
-    print(f'Total number of bytes: {len(delta_pixels)*2}\n')
+    #total_frames = len(delta_frames)
+    #print(f'Total number of frames: {total_frames}')
 
+    # Perform Zigzag -> RLE 
+    for frame in delta_frames: 
 
-    # Perform Zigzag -> RLE -> VLE chain
-    zigzag_vals     = zigzagEncode(delta_pixels)
-    rle_vals       = rleEncode(zigzag_vals)
-    pixels_with_vle = variableLengthEncode(rle_vals)
+        flat_frame = frame.flatten()
+        assert len(flat_frame) == 128*128 
+        zigzag_frame = zigzagEncode(flat_frame)
+        assert zigzag_frame.ndim == 1
+        assert len(zigzag_frame) == 128*128  
+        rle_frame = rleEncode(zigzag_frame)
 
+        compressed_frames.extend(rle_frame)
 
-    """ # Debugging information
-    zig_zag_debug = zigzag_vals.reshape(total_frames, 128, 128)
-    with open("output/zigzag.txt", "w") as f:
-        for j, frame in enumerate(zig_zag_debug):
-            f.write(f"# --- Frame {j} ---\n")
-            np.savetxt(f, frame, fmt="%x")
-            f.write("\n\n")
+    # Debugging information
+    print(f'Total number of bytes after RLE: {len(compressed_frames)}')
 
-    rle_vals.tofile("output/rle.bin")
-
-    with open('output/rle.txt', "w") as f:
-        for i in range(0, len(rle_vals), 128):
-            row = rle_vals[i:i+128]
-            f.write(" ".join(hex(x) for x in row) + "\n") """
-
-
-    """ decoded_zig = zigzagDecode(zigzag_vals).reshape(total_frames, 128, 128)
-    with open("output/decoded_zig.txt", "w") as f:
-        for j, frame in enumerate(decoded_zig):
-            f.write(f"# --- Frame {j} ---\n")
-            np.savetxt(f, frame, fmt="%x")
-            f.write("\n\n") """
-
-
-    print(f'Total number of bytes after RLE: {len(rle_vals)}')
-    print(f'Total number of bytes if processed with VLE: {len(pixels_with_vle)}')
-
-
-    #return pixels_with_vle
-    return rle_vals # Seems applying VLE is unecessary now
+    return compressed_frames

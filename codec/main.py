@@ -21,6 +21,7 @@ def main():
 
     start_time = time.time()
 
+    # Optional: play back video you plan to compress
     video_playback(FILEPATH)
 
 
@@ -73,8 +74,6 @@ def main():
     
     with open(ENCODED_BIN, "wb") as f:
         f.write(encoded_frames)
-
-
 
     end_time = time.time()
     print(f'Total time elapsed: {end_time-start_time:.2f}')

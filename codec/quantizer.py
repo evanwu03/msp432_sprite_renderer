@@ -95,8 +95,8 @@ def averageColor(pixels: np.ndarray) -> np.ndarray:
 
 
 def quantize_pixels(pixels: np.ndarray, palette: np.ndarray) -> np.ndarray:
-    # unpack
-
+    
+    
     #print("pixels contain NaN:", np.isnan(pixels).any())
     #print("palette contain NaN:", np.isnan(palette).any())
 

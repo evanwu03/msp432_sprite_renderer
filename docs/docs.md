@@ -69,3 +69,14 @@ Goals for today are to:
 - develop python implementation of decoder
 - Write utility to cocnvert encoded video to a C-style array
 - ~~Optimize euclidean distance calculaitons (they are slow!)~~ We achieved about 2x speedup by removing the np.sqrt() and precomputing norms
+
+
+# 20251221 
+
+- Today we are adding frame boundaries to our encoder. THis ensures that the decoder is granted the necessary metadata to reconstruct frames. My first approach will be as follows:
+
+1. Each frame decodes to exactly 16384 pixels (Defined by a global header) 
+2. RLE decoding must stop immediately when pixel count reaches 16384
+3. Encoder must never emit tokens that would exceed 16384 pixels
+4. Any remaining bytes after that point belong to the next frame
+5. A global stream header is prepended to the compressed data which holds metadata for the decoder. 
