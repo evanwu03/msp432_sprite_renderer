@@ -29,7 +29,6 @@ import os
 #FILENAME  = 'raden_12fps.mp4'
 FILENAME = 'trampoline3.mp4'
 
-
 BASE = os.path.dirname(os.path.abspath(__file__))
 FILEPATH = os.path.join(BASE, 'videos', FILENAME)
 FRAME_TXT_DUMP = os.path.join(BASE, 'output', 'delta.txt')

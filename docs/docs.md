@@ -65,9 +65,9 @@ I noticed throughout this project I have been slowly adding new pieces to the co
 # 20251219
 
 Goals for today are to: 
-- Add frame boundaries in my run length encoder  
+- ~~Add frame boundaries in my run length encoder~~  
 - develop python implementation of decoder
-- Write utility to cocnvert encoded video to a C-style array
+- ~~write utility to convert encoded video to a C-style array~~
 - ~~Optimize euclidean distance calculaitons (they are slow!)~~ We achieved about 2x speedup by removing the np.sqrt() and precomputing norms
 
 

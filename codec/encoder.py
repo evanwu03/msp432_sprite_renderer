@@ -183,7 +183,7 @@ def compress_video(frames: np.ndarray) -> bytearray:
     # Perform Zigzag -> RLE 
     for frame in delta_frames: 
 
-        flat_frame = frame.flatten()
+        flat_frame = frame.ravel()
         assert len(flat_frame) == 128*128 
         zigzag_frame = zigzagEncode(flat_frame)
         assert zigzag_frame.ndim == 1

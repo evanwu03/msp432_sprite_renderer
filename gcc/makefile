@@ -25,6 +25,7 @@ LNK = $(CC)
 # ============================================================
 CFLAGS = -I.. \
 	-I/include \
+	-I../src/ \
 	"-I$(SIMPLELINK_MSP432_SDK_INSTALL_DIR)/source/" \
 	"-I${SIMPLELINK_MSP432_SDK_INSTALL_DIR}/source/ti/devices/msp432p4xx/inc" \
 	"-I$(SIMPLELINK_MSP432_SDK_INSTALL_DIR)/source/third_party/CMSIS/Include" \

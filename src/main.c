@@ -20,6 +20,9 @@
 // Pixel art byte map
 #include "pixel_map.h"
 
+// Video file 
+//#include "video.h"
+
 
 #define WIDTH 128
 #define HEIGHT 128 
@@ -73,8 +76,6 @@ int main(void)
     gpio_init_output(&led1, PORT1_BASE, BIT0);
     gpio_write(&led1, false); // Turn off LED initially
 
-
-
     lcd_init();
     
 
@@ -87,7 +88,10 @@ int main(void)
     //lcd_draw_image(kokomi_128x128_map, 0, 0, WIDTH, HEIGHT);
     //lcd_draw_image(ronald_wojak_128x128_map, 0, 0 , WIDTH, HEIGHT);
     //lcd_draw_image(hatsune_miku_128x128_map, 0, 0,  WIDTH, HEIGHT);
-    lcd_draw_image(orca_128x128_map, 0, 0, WIDTH, HEIGHT);
+    //lcd_draw_image(orca_128x128_map, 0, 0, WIDTH, HEIGHT);
+    lcd_draw_image(wolf_girl_map, 0, 0, WIDTH, HEIGHT);
+
+
     while (1)
     {
 
