@@ -105,7 +105,9 @@ def main():
             if i % 12 == 0:
                 f.write("\n")
             f.write(f"0x{b:02X}, ")
-                
+
+
+    
 
     end_time = time.time()
     print(f'Total time elapsed: {end_time-start_time:.2f}')

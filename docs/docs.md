@@ -79,4 +79,5 @@ Goals for today are to:
 2. RLE decoding must stop immediately when pixel count reaches 16384
 3. Encoder must never emit tokens that would exceed 16384 pixels
 4. Any remaining bytes after that point belong to the next frame
-5. A global stream header is prepended to the compressed data which holds metadata for the decoder. 
+5. A global stream header is prepended to the compressed data which holds metadata for the decoder.
+

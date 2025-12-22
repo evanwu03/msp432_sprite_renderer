@@ -26,9 +26,6 @@ def decodeUint16(stream: bytearray, pos: int) -> tuple[int, int]:
     return val, pos
 
 
-
-
-
 # This is probably a naive way to detect run lengths 
 # and would be much better to use a flag to distinguish a run length from a
 # non encoded value

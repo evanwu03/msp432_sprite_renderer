@@ -36,21 +36,18 @@ def zigzagEncode(arr: np.ndarray) -> np.ndarray:
     return ((arr << 1) ^ (arr >> 15)).astype(np.uint8)
 
 
-""" def zigzagEncode(arr: np.ndarray) -> np.ndarray: 
+#+----------+--------------------+------------------------------+
+#| TOKEN    | BYTE STREAM        | DECODED OUTPUT               |
+#+----------+--------------------+------------------------------+
+#| RUN      | [1LLLLLLL][VV]     | VV repeated L times          |
+#|          |                    |                              |
+#| LITERAL  | [0LLLLLLL][V0]...  | V0 V1 ... V(L-1)             |
+#|          |            [V(L-1)]|                              |
+#+----------+--------------------+------------------------------+
 
-    zigzag = []
-    for i in range(len(arr)):
-        zigzag.append(zigzagEncodeSingle(arr[i]))
-        
-    return np.array(zigzag, dtype=np.uint8)
-
-def zigzagEncodeSingle(val) :
-    if val < 0:
-        return - 2 * val  - 1
-    return 2 * val 
- """
-
-
+# The table describes the token format for consecutive runs and literals. 
+# The RLE uses a 2 byte format where bit 7 of the first byte determines if the following value is 
+# a run or literal; bit 0-6 determines how many literals or runs to emit (up to 127) 
 def rleEncode(values: np.ndarray) -> np.ndarray:
     result = []
     n = len(values)
@@ -177,8 +174,8 @@ def compress_video(frames: np.ndarray) -> bytearray:
     # ==============================
 
     # Before encoding
-    #total_frames = len(delta_frames)
-    #print(f'Total number of frames: {total_frames}')
+    # total_frames = len(delta_frames)
+    # print(f'Total number of frames: {total_frames}')
 
     # Perform Zigzag -> RLE 
     for frame in delta_frames: 
