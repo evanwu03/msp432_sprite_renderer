@@ -24,6 +24,7 @@ def deltaEncode(palette_indices: np.ndarray) -> np.ndarray:
         # append it to list and update previous frame value
         delta_frame = idx_frame.astype(np.int16) - prev.astype(np.int16)
 
+
         deltas.append(delta_frame) 
 
         prev = idx_frame
@@ -33,7 +34,7 @@ def deltaEncode(palette_indices: np.ndarray) -> np.ndarray:
 
     
 def zigzagEncode(arr: np.ndarray) -> np.ndarray:
-    return ((arr << 1) ^ (arr >> 15)).astype(np.uint8)
+    return ((arr << 1) ^ (arr >> 15)).astype(np.uint8) # perhaps zigzag is truncating
 
 
 #+----------+--------------------+------------------------------+
@@ -145,10 +146,11 @@ def compress_video(frames: np.ndarray) -> bytearray:
 
     # Perform Zigzag -> RLE 
     for frame in delta_frames: 
-
+        
         flat_frame = frame.ravel()
         zigzag_frame = zigzagEncode(flat_frame)
         rle_frame = rleEncode(zigzag_frame)
+
 
         compressed_frames.extend(rle_frame)
 

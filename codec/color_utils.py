@@ -10,15 +10,19 @@ class Color_Resolution(Enum):
 
 
 # Converts a frame in BGR888 -> BGR565
-def bgr_to_bgr565_frame(bgr: np.ndarray) -> np.ndarray:
+# first_frame: shape (H*W,), dtype uint32, format 0xBBGGRR
 
-    blue  = (bgr[:, :, 0] >> 3)
-    green = (bgr[:, :, 1] >> 2)
-    red   = (bgr[:, :, 2] >> 3)
+def bgr24_to_bgr565(pixels24: np.ndarray) -> np.ndarray:
+    b = (pixels24 >> 16) & 0xFF
+    g = (pixels24 >> 8)  & 0xFF
+    r =  pixels24        & 0xFF
 
-    #bgr565 = (red << 11) | (green << 5) | blue
-    bgr565  = (blue << 11) | (green << 5) | red
-    return bgr565
+    b5 = (b >> 3) & 0x1F
+    g6 = (g >> 2) & 0x3F
+    r5 = (r >> 3) & 0x1F
+
+    return ((b5 << 11) | (g6 << 5) | r5).astype(np.uint16)
+
 
 
 # Converts a frame in BGR888 -> BGR565

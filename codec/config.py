@@ -15,7 +15,7 @@ import os
 #FILENAME = 'ryo_yamada_128x128_12fps.mp4'
 #FILENAME  = 'ryo2.mp4'
 #FILENAME = 'kikuri.mp4'
-#FILENAME = 'kikuri_10fps.mp4'
+FILENAME = 'kikuri_10fps.mp4'
 #FILENAME = 'kikuri_20fps.mp4'
 #FILENAME = 'ragebaited.mp4'
 #FILENAME = 'bocchi.mp4'
@@ -27,7 +27,7 @@ import os
 #FILENAME  = 'raden.mp4'
 #FILENAME  = 'raden_20fps.mp4'
 #FILENAME  = 'raden_12fps.mp4'
-FILENAME = 'trampoline3.mp4'
+#FILENAME = 'trampoline3.mp4'
 
 
 BASE = os.path.dirname(os.path.abspath(__file__))

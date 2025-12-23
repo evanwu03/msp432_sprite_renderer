@@ -1,6 +1,8 @@
 
 import numpy as np
 from encoder import rleEncode
+from encoder import zigzagEncode
+from decoder import *
 
 test_data = np.zeros(1000, dtype=np.uint16)      
 out = rleEncode(test_data)
@@ -30,3 +32,11 @@ for v in out:
     print(v, end=" ")
 
 print('\n')
+
+
+print(f'Zigzag test:')
+
+x = np.random.randint(-127, 127, size=1000, dtype=np.int16)
+assert np.all(zigzagDecode(zigzagEncode(x)) == x)
+print("Passed test")
+

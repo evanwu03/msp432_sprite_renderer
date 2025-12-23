@@ -8,7 +8,6 @@ def zigzagDecode(arr: np.ndarray) -> np.ndarray:
 
 
 
-
 def rleDecode(stream: bytearray, width: int, height: int, position: int = 0) -> tuple[np.ndarray,  int]:
 
 
@@ -93,10 +92,18 @@ def decoder(filename: str, output_file) -> None:
 
 
     # Parse palette table
-    palette_bytes = video[pos:pos + num_colors *2]
-    pos += num_colors * 2
+    #palette_bytes = video[pos:pos + num_colors *2]
+    palette_bytes = video[pos:pos + num_colors * 3] # if palette is 24 bits
 
-    palette565 = np.frombuffer(palette_bytes, dtype=np.uint16)
+    #pos += num_colors * 2
+    pos += num_colors * 3
+    
+    #palette565 = np.frombuffer(palette_bytes, dtype=np.uint16)
+    palette24 = np.frombuffer(palette_bytes, dtype=np.uint8).reshape(num_colors, 3)
+
+    #print("Decoded palette: ")
+    #print(palette24)
+    assert palette24.shape == (num_colors, 3)
 
     #print(palette565)
     #print(f"length of palette is : {len(palette565)}")
@@ -105,7 +112,7 @@ def decoder(filename: str, output_file) -> None:
     # Set up VideoWriter
     writer = cv2.VideoWriter(
         output_file,
-        cv2.VideoWriter_fourcc(*"MP4V"),
+        cv2.VideoWriter_fourcc(*'mp4v'),
         12.0,
         (width, height)
     )
@@ -114,6 +121,7 @@ def decoder(filename: str, output_file) -> None:
     # For all frames 
     # Decode frames and write to the output file
     prev_frame = None
+    
     
     while pos < len(video): 
 
@@ -128,19 +136,29 @@ def decoder(filename: str, output_file) -> None:
             curr_idx = deltas
         else:
             curr_idx = (prev_frame + deltas).astype(np.int16)
-
+            curr_idx = np.clip(prev_frame + deltas, 0, num_colors -1)
+        #curr_idx = (curr_idx & 0xFF).astype(np.int32)
         prev_frame = curr_idx
 
+        # Sanity check palette indices aren't out of range
+        if np.any(curr_idx < 0) or np.any(curr_idx >= num_colors):
+            raise RuntimeError(f"Palette index out of range: " f"min={curr_idx.min()}, max={curr_idx.max()}"
+        )
+
+        
+
         # Palette lookup
-        frame565 = palette565[curr_idx].reshape(height, width) # fancy numpy indexing here idk
-
-        b = ((frame565 >> 0)  & 0x1F) << 3
-        g = ((frame565 >> 5)  & 0x3F) << 2
-        r = ((frame565 >> 11) & 0x1F) << 3
-
-        frame_bgr = np.dstack((b, g, r)).astype(np.uint8)
-
+        # frame565 = palette565[curr_idx].reshape(height, width) # fancy numpy indexing here idk
+        frame24 = palette24[curr_idx].reshape(height, width, 3)
+         
+        #b = ((frame565 >> 0)  & 0x1F) << 3
+        #g = ((frame565 >> 5)  & 0x3F) << 2
+        #r = ((frame565 >> 11) & 0x1F) << 3
+        #frame_bgr = np.dstack((b, g, r)).astype(np.uint8)
+    
         # convert to BGR888 for opencv
-        writer.write(frame_bgr)
+        writer.write(frame24)
+   
 
     writer.release()
+

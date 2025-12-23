@@ -128,7 +128,7 @@ def quantize_pixels(pixels: np.ndarray, palette: np.ndarray) -> np.ndarray:
     if np.any(np.isnan(dist2)):
         raise ValueError("NaNs detected in distance matrix")
     
-    indices = np.argmin(dist2, axis=1).astype(np.uint8)
+    indices = np.argmin(dist2, axis=1).astype(np.uint8) # uint8 because we don't expect k > 256
 
     print(f'Time to compute euclidean distances: {end-start:.2f}')
 

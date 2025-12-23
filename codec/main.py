@@ -3,10 +3,9 @@
 
 import numpy as np
 import time 
-
+import cv2
 
 from quantizer import generate_palette
-from quantizer import palette_bgr24_to_bgr565
 from quantizer import quantize_pixels
 
 
@@ -14,10 +13,12 @@ from encoder import compress_video
 
 from decoder import decoder
 
+
 from video import video_playback
 from video import extract_video_frames
 
 from config import *
+
 
 def main(): 
 
@@ -37,6 +38,7 @@ def main():
 
     # Flatten to 1D list of pixels
     pixels = np.concatenate([frame.ravel() for frame in video])
+    first_frame = video[0, :, :].ravel() # quantize only the first frame
     raw_size_bytes = len(pixels)*4
 
 
@@ -44,8 +46,49 @@ def main():
 
 
     # Generate Color palette
-    color_palette = generate_palette(pixels, 256)
-    color_palette = palette_bgr24_to_bgr565(color_palette)
+    NUM_COLOR = 256
+    color_palette = generate_palette(pixels, NUM_COLOR)
+
+    #color_palette = generate_palette(first_frame, 256).astype(np.uint32)
+
+
+    # TEST print of first frame quantized before encoding
+    indices = quantize_pixels(first_frame, color_palette)
+
+    # -----------------------------
+    # Reconstruct image
+    # -----------------------------
+    quantized_pixels = color_palette[indices].reshape(height,width)              # fancy indexing
+    quantized_img = np.empty((height, width, 3), dtype = np.uint8) 
+    quantized_img[:, :, 0] = (quantized_pixels >> 16) & 0xFF  # B
+    quantized_img[:, :, 1] = (quantized_pixels >> 8) & 0xFF   # G
+    quantized_img[:, :, 2] = quantized_pixels & 0xFF          # R
+
+    # -----------------------------
+    # Display
+    # -----------------------------
+    cv2.imshow("Quantized", quantized_img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+   
+
+
+    #print(color_palette)
+    palette_b = (color_palette >> 16)  & 0xFF
+    palette_g = (color_palette >> 8)  & 0xFF
+    palette_r = (color_palette >> 0) & 0xFF
+
+    #palette_bgr = np.stack([palette_b, palette_g, palette_r], axis=1).astype(np.uint8)
+    palette_bgr = np.stack([palette_b, palette_g, palette_r], axis=1).astype(np.uint8)
+
+    #print(palette_bgr)    
+    assert palette_bgr.shape == (NUM_COLOR, 3)
+  
+    #print("palette dtype:", color_palette.dtype)
+    #print("palette itemsize:", color_palette.itemsize)
+    #print("palette bytes written:", len(color_palette.tobytes()))
+
+    #color_palette = palette_bgr24_to_bgr565(color_palette)
 
 
     #color_palette = np.array(list(dict.fromkeys(color_palette)), dtype=np.uint16)
@@ -61,7 +104,9 @@ def main():
     print(f'Total quantization time: {(quantization_finish_time-quantization_start_time):.2f}')
 
     #print(f'Quantized Video Resolution: {quantized_frame.shape}')
-
+    print( quantized_frame.min(),quantized_frame.max() )
+    assert quantized_frame.min() >= 0 
+    assert quantized_frame.max() < NUM_COLOR
 
     """ print(f'Dimensions of quantized frames: {quantized_frame.shape}')
     print(f'length of color palette: {len(color_palette)}')
@@ -93,8 +138,8 @@ def main():
         f.write((256).to_bytes(2, "big"))                 # number of colors in palette
         f.write(bytes([0xFF]))       # Dummy byte for flags to be defined later
 
-        f.write(color_palette.tobytes())       # color palette 
-
+        #f.write(color_palette.tobytes())       # color palette 
+        f.write(palette_bgr.tobytes())
 
         f.write(encoded_frames)     # compressed frames
 
@@ -111,7 +156,7 @@ def main():
 
     decoder(ENCODED_BIN, "output/video_decoded.mp4")
 
-    
+
     end_time = time.time()
     print(f'Total time elapsed: {end_time-start_time:.2f}')
 
