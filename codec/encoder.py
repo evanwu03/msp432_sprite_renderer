@@ -120,40 +120,6 @@ def rleEncode(values: np.ndarray) -> np.ndarray:
  """
 
 
-
-# Variable length encoding
-# 1. Break number into 7 bit groups
-# 2. Set top bit = 0 for last byte
-# 3. Set top bit = 1 for continuation
-
-def variableLengthEncode(arr: np.ndarray) -> bytearray:
-    out = bytearray()
-    for v in arr:
-        out.extend(encodeUint16(int(v)))
-    return out
-
-
-def encodeUint16(arr: int) -> bytearray:
-
-    buf = bytearray()
-
-    while True: 
-
-        byte = arr & 0x7F
-        arr >>= 7
-        
-        if arr != 0:
-            byte |= 0x80 
-    
-        buf.append(byte)
-
-        if arr == 0:
-            break
-
-    return buf # Return byte array 
-
-
-
 def compress_video(frames: np.ndarray) -> bytearray:
 
     compressed_frames = bytearray()

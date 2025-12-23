@@ -7,46 +7,53 @@ def zigzagDecode(arr: np.ndarray) -> np.ndarray:
     return (arr.astype(np.int16) >> 1) ^ (-(arr.astype(np.int16)&1))
 
 
-def decodeUint16(stream: bytearray, pos: int) -> tuple[int, int]: 
-
-    val = int(0)
-    shift = 0
-
-    while True: 
-
-        byte = stream[pos]
-        pos += 1
-
-        val |= (byte & 0x7F) << shift # Extract the least significant 7 bits   
-        shift += 7
-
-        if (byte & 0x80) == 0: # MSB = 0 -> end of integer
-            break
-
-    return val, pos
+def rleDecode(stream: bytearray, width: int, height: int, position: int = 0) -> tuple[np.ndarray,  int]:
 
 
-# This is probably a naive way to detect run lengths 
-# and would be much better to use a flag to distinguish a run length from a
-# non encoded value
-def rleDecode(values: list[int]) -> list[int]:
+    out = []
+    frame_pixels = width * height
+    pixel_count = 0 
+    i = position
 
-    result = []
-    i = 0
-    n = len(values)
-    run_len = 0
 
-    while i < n:
 
-        cur = values[i]
+    while pixel_count < frame_pixels and i < len(stream): 
 
-        if cur == 0 :
-            run_len = values[i+1]
-            result.extend([0] * run_len)
-            i += 2
+        # parses the header byte
+        run_len = stream[i] & 0x7F 
+        is_run = stream[i] & 0x80 != 0
+
+        i += 1 
+
+        # Debug Asserts        
+        if run_len == 0: 
+            raise ValueError ("Invalid RLE length 0")
+        
+        if pixel_count + run_len > frame_pixels:
+            raise ValueError("RLE token exceeds frame boundary, check encoder implementation")
+        
+        
+        # Following sequence is a consecutive run 
+        if is_run:
+
+            # emit the value 
+            run_value = stream[i] 
+
+            for k in range(run_len):
+               out.append(run_value)
+
+            i += 1 
+
         else:
-            result.append(values[i])
-            i += 1
 
-    return result
+            # emit the following literal
+            for k in range(run_len):
+                out.append(stream[i])
+                i += 1
+        
+        pixel_count += run_len
+
+    return (np.array(out, dtype=np.uint8), i)
+
+
 
