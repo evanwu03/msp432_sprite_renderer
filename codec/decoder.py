@@ -1,10 +1,12 @@
 
 import numpy as np
-
+import cv2
 
 
 def zigzagDecode(arr: np.ndarray) -> np.ndarray:
     return (arr.astype(np.int16) >> 1) ^ (-(arr.astype(np.int16)&1))
+
+
 
 
 def rleDecode(stream: bytearray, width: int, height: int, position: int = 0) -> tuple[np.ndarray,  int]:
@@ -57,3 +59,88 @@ def rleDecode(stream: bytearray, width: int, height: int, position: int = 0) -> 
 
 
 
+
+# Reads the compressed video binary and decodes the frames and writes them to a video file
+def decoder(filename: str, output_file) -> None: 
+
+
+    with open(filename, "rb") as f: 
+        video = f.read()
+
+    # current position in file 
+    pos = 0
+
+
+    # Parse the stream header 
+    format_id = video[pos:pos+2]   
+    print(format_id) 
+    if format_id != b"\x56\x43":
+        raise ValueError("Invalid video format")
+    pos += 2 
+
+    # Get video resolution
+    width = video[pos]; pos += 1 
+    height = video[pos]; pos += 1         
+
+
+    # Get number of colors in palette
+    num_colors = int.from_bytes(video[pos:pos+2], "big")
+    pos += 2
+
+    # Retrieves codec flags
+    flags = video[pos] # not used yet
+    pos += 1
+
+
+    # Parse palette table
+    palette_bytes = video[pos:pos + num_colors *2]
+    pos += num_colors * 2
+
+    palette565 = np.frombuffer(palette_bytes, dtype=np.uint16)
+
+    #print(palette565)
+    #print(f"length of palette is : {len(palette565)}")
+
+
+    # Set up VideoWriter
+    writer = cv2.VideoWriter(
+        output_file,
+        cv2.VideoWriter_fourcc(*"MP4V"),
+        12.0,
+        (width, height)
+    )
+
+
+    # For all frames 
+    # Decode frames and write to the output file
+    prev_frame = None
+    
+    while pos < len(video): 
+
+        # RLE decode 
+        zigzag_frame, pos = rleDecode(video, width, height, pos)
+
+        # Zigzag decode
+        deltas = zigzagDecode(zigzag_frame)
+
+        # Delta decode
+        if prev_frame is None:
+            curr_idx = deltas
+        else:
+            curr_idx = (prev_frame + deltas).astype(np.int16)
+
+        prev_frame = curr_idx
+
+        # Palette lookup
+        frame565 = palette565[curr_idx].reshape(height, width) # fancy numpy indexing here idk
+
+        b = ((frame565 >> 0)  & 0x1F) << 3
+        g = ((frame565 >> 5)  & 0x3F) << 2
+        r = ((frame565 >> 11) & 0x1F) << 3
+
+        frame_bgr = np.dstack((b, g, r)).astype(np.uint8)
+
+        # convert to BGR888 for opencv
+        writer.write(frame_bgr)
+
+    writer.release()

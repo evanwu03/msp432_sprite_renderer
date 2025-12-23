@@ -12,6 +12,8 @@ from quantizer import quantize_pixels
 
 from encoder import compress_video
 
+from decoder import decoder
+
 from video import video_playback
 from video import extract_video_frames
 
@@ -107,8 +109,9 @@ def main():
             f.write(f"0x{b:02X}, ")
 
 
-    
+    decoder(ENCODED_BIN, "output/video_decoded.mp4")
 
+    
     end_time = time.time()
     print(f'Total time elapsed: {end_time-start_time:.2f}')
 

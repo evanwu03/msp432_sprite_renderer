@@ -147,10 +147,7 @@ def compress_video(frames: np.ndarray) -> bytearray:
     for frame in delta_frames: 
 
         flat_frame = frame.ravel()
-        assert len(flat_frame) == 128*128 
         zigzag_frame = zigzagEncode(flat_frame)
-        assert zigzag_frame.ndim == 1
-        assert len(zigzag_frame) == 128*128  
         rle_frame = rleEncode(zigzag_frame)
 
         compressed_frames.extend(rle_frame)
