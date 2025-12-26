@@ -93,17 +93,14 @@ def decoder(filename: str, output_file) -> None:
     #pos += num_colors * 2
     pos += num_colors * 3
     
-    #palette565 = np.frombuffer(palette_bytes, dtype=np.uint16)
+
     palette24 = np.frombuffer(palette_bytes, dtype=np.uint8).reshape(num_colors, 3)
 
     #print("Decoded palette: ")
     #print(palette24)
     assert palette24.shape == (num_colors, 3)
 
-    #print(palette565)
-    #print(f"length of palette is : {len(palette565)}")
-
-
+  
     # Set up VideoWriter
     writer = cv2.VideoWriter(
         output_file,
@@ -139,7 +136,6 @@ def decoder(filename: str, output_file) -> None:
             
 
             # Palette lookup
-            # frame565 = palette565[curr_idx].reshape(height, width) # fancy numpy indexing here idk
             frame24 = palette24[curr_idx].reshape(height, width, 3)
             
             # Convert BGR888 → BGR565

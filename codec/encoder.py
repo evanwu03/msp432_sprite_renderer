@@ -114,7 +114,6 @@ def rleEncode(values: np.ndarray) -> np.ndarray:
 
     while i < n: 
 
-    
     return 
  """
 
@@ -124,7 +123,7 @@ def compress_video(frames: np.ndarray) -> bytearray:
     compressed_frames = bytearray()
 
     #Delta Encoding
-    delta_frames = deltaEncode(frames) # Need to edit so first frame is also returned
+    delta_frames = deltaEncode(frames)
 
     # Dumps delta frames in a txt file
     with open(FRAME_TXT_DUMP, "w") as f:
@@ -142,13 +141,10 @@ def compress_video(frames: np.ndarray) -> bytearray:
     # total_frames = len(delta_frames)
     # print(f'Total number of frames: {total_frames}')
 
-    # Perform Zigzag -> RLE 
+    # Perform -> RLE 
     for frame in delta_frames: 
         
-        flat_frame = frame.ravel()
-        #zigzag_frame = zigzagEncode(flat_frame)
-        #rle_frame = rleEncode(zigzag_frame)
-        rle_frame = rleEncode(flat_frame)
+        rle_frame = rleEncode(frame.ravel())
 
         compressed_frames.extend(rle_frame)
 

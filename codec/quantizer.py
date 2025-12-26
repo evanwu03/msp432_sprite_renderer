@@ -3,19 +3,6 @@
 import numpy as np
 import time 
 
-def palette_bgr24_to_bgr565(palette24: np.ndarray) -> np.ndarray:
-
-    B = (palette24 >> 16) & 0xFF
-    G = (palette24 >> 8)  & 0xFF
-    R =  palette24         & 0xff
-    
-    B5 = B >> 3
-    G6 = G >> 2
-    R5 = R >> 3
-   
-    bgr565 = (B5 << 11) | (G6 << 5) | R5
-    return bgr565.astype(np.uint16)
-    
 
 
 def generate_palette(bucket: np.ndarray, num_colors=256)  -> np.ndarray:

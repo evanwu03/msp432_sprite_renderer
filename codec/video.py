@@ -3,8 +3,6 @@ import cv2
 import time 
 import numpy as np
 
-from color_utils import bgr24_to_int
-
 # Plays back video on screen
 def video_playback(filepath: str) -> None:
 
