@@ -117,7 +117,7 @@ def quantize_pixels(pixels: np.ndarray, palette: np.ndarray) -> np.ndarray:
     
     indices = np.argmin(dist2, axis=1).astype(np.uint8) # uint8 because we don't expect k > 256
 
-    print(f'Time to compute euclidean distances: {end-start:.2f}')
+    #print(f'Time to compute euclidean distances: {end-start:.2f}')
 
     return  indices
 

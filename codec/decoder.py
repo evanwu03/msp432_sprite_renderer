@@ -73,10 +73,9 @@ def decoder(filename: str, output_file) -> None:
     pos += 2 
 
     # Get video resolution
-    width = video[pos]; pos += 1 
-    height = video[pos]; pos += 1         
-
-
+    width = int.from_bytes(video[pos:pos+2], "big"); pos += 2
+    height = int.from_bytes(video[pos:pos+2], "big"); pos += 2
+    
     # Get number of colors in palette
     num_colors = int.from_bytes(video[pos:pos+2], "big")
     pos += 2

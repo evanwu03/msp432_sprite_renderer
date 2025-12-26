@@ -66,7 +66,7 @@ I noticed throughout this project I have been slowly adding new pieces to the co
 
 Goals for today are to: 
 - ~~Add frame boundaries in my run length encoder~~  
-- develop python implementation of decoder
+- ~~develop python implementation of decoder~~
 - ~~write utility to convert encoded video to a C-style array~~
 - ~~Optimize euclidean distance calculaitons (they are slow!)~~ We achieved about 2x speedup by removing the np.sqrt() and precomputing norms
 
@@ -81,3 +81,13 @@ Goals for today are to:
 4. Any remaining bytes after that point belong to the next frame
 5. A global stream header is prepended to the compressed data which holds metadata for the decoder.
 
+
+
+# 20251226 
+- Update: At least the python decoder implementation finally works after entirely scrapping the zigzag encoder and instead relying on uint8 overflow/underflow behavior to ensure that delta frames wrap around to the correct value. This was definitely an area I should have tested more thoroughly, but with each bug I ran into I feel like it challenged me to make sure I understand the code I was writing. 
+  
+- I played around with a few things like trying to truncate a 24 bit palette to 16 bit palette after the fact however it appears doing so does not produce the intended colors, likely due to some nonlinearity in the color space I mapped, so I decided that I would keep all quantization with 24 bit BGR inputs. This hurts compression slightly because we can not exploit that fact that quantizing a 16 bit color palette increases the odds that more colors map to the same color, but as I've noticed this harms the video quality which is not something I'm willing to sacrifice. 
+
+- The other I verified that I can decode a frame and then truncate it to BGR565 and then write that to a raw .bgr565 file. I then played the .bgr565 file using ffplay and it worked! This gives me high confidence that the decoder works for decoding to 24 bits and likewise 16 bit colors.
+
+- Other than that I mainly refactored and tidied up the codebase a bit, adding comments where necessary or deleting deprecated code. Currently a problem I've noticed is that extreme memory usage for larger videos during quantization that does cause my PC to crash. So it dawned on me that maybe it's a really bad idea to try and brute force all pairwise euclidean distances in my quantizer, so I have decided to be at least a little smarter and preallocate the quantized frames and quantize frame by frame instead. 

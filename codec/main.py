@@ -43,7 +43,8 @@ def main():
 
     # Generate Color palette
     NUM_COLOR = 256
-    color_palette = generate_palette(pixels, NUM_COLOR)
+    #color_palette = generate_palette(pixels, NUM_COLOR)
+    color_palette = generate_palette(video[0, :, :].ravel(), NUM_COLOR)
     #print(color_palette)
 
 
@@ -78,19 +79,28 @@ def main():
     #print("palette itemsize:", color_palette.itemsize)
     #print("palette bytes written:", len(color_palette.tobytes()))
 
-
     # Quantize frames 
     quantization_start_time = time.time()
-    quantized = quantize_pixels(pixels, color_palette) 
-    quantized_frame = quantized.reshape(num_frames, height, width)
+
+
+    # Preallocate array and quantize frame by frame instead still kind of a brute force but no longer trying to compute all pairwise distances at once
+    # and devouring memory
+    quantized_frames = np.empty((num_frames, height, width), dtype=np.uint8)
+    for i in range(num_frames):
+
+        frame_pixels = video[i].reshape(-1)   
+        q = quantize_pixels(frame_pixels, color_palette)
+        quantized_frames[i] = q.reshape(height, width)
+
+
     quantization_finish_time = time.time()
     print(f'Total quantization time: {(quantization_finish_time-quantization_start_time):.2f}')
 
 
     #print(f'Quantized Video Resolution: {quantized_frame.shape}')
     #print( quantized_frame.min(),quantized_frame.max() )
-    assert quantized_frame.min() >= 0 
-    assert quantized_frame.max() < NUM_COLOR
+    assert quantized_frames.min() >= 0 
+    assert quantized_frames.max() < NUM_COLOR
 
              
 
@@ -106,15 +116,16 @@ def main():
 
     # Compress video
     encoded_frames = bytearray() 
-    encoded_frames = compress_video(quantized_frame)
+    encoded_frames = compress_video(quantized_frames)
 
 
     print(f'Total Compression Ratio: {raw_size_bytes/len(encoded_frames):.2f}')
     
     # Write compressed video to binary file
     with open(ENCODED_BIN, "wb") as f:
-        f.write(b"\x56\x43")         # decoder expects this to identify video format
-        f.write(bytes([width, height]))    # Width and Height of frames
+        f.write(b"\x56\x43")                 # decoder expects this to identify video format
+        f.write(width.to_bytes(2, "big"))    # Width of frames
+        f.write(height.to_bytes(2, "big"))   # Height of frames
         f.write((NUM_COLOR).to_bytes(2, "big"))                 # number of colors in palette
         f.write(bytes([0xFF]))       # Dummy byte for flags to be defined later
 
