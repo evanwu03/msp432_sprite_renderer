@@ -117,39 +117,45 @@ def decoder(filename: str, output_file) -> None:
     # Decode frames and write to the output file
     prev_frame = None
     
-    
-    while pos < len(video): 
+    with open("output/video.bgr565", "wb") as f:
+        while pos < len(video): 
 
-        # RLE decode 
-        deltas, pos = rleDecode(video, width, height, pos)
+            # RLE decode 
+            deltas, pos = rleDecode(video, width, height, pos)
 
-        # Delta decode
-        if prev_frame is None:
-            curr_idx = deltas
-        else:
-            curr_idx = (prev_frame + deltas).astype(np.uint8)
+            # Delta decode
+            if prev_frame is None:
+                curr_idx = deltas
+            else:
+                curr_idx = (prev_frame + deltas).astype(np.uint8)
 
-        prev_frame = curr_idx
+            prev_frame = curr_idx
 
-        # Sanity check palette indices aren't out of range
-        if np.any(curr_idx < 0) or np.any(curr_idx >= num_colors):
-            raise RuntimeError(f"Palette index out of range: " f"min={curr_idx.min()}, max={curr_idx.max()}"
-        )
+            # Sanity check palette indices aren't out of range
+            if np.any(curr_idx < 0) or np.any(curr_idx >= num_colors):
+                raise RuntimeError(f"Palette index out of range: " f"min={curr_idx.min()}, max={curr_idx.max()}"
+            )
 
-        
+            
 
-        # Palette lookup
-        # frame565 = palette565[curr_idx].reshape(height, width) # fancy numpy indexing here idk
-        frame24 = palette24[curr_idx].reshape(height, width, 3)
-         
-        #b = ((frame565 >> 0)  & 0x1F) << 3
-        #g = ((frame565 >> 5)  & 0x3F) << 2
-        #r = ((frame565 >> 11) & 0x1F) << 3
-        #frame_bgr = np.dstack((b, g, r)).astype(np.uint8)
-    
-        # convert to BGR888 for opencv
-        writer.write(frame24)
-   
+            # Palette lookup
+            # frame565 = palette565[curr_idx].reshape(height, width) # fancy numpy indexing here idk
+            frame24 = palette24[curr_idx].reshape(height, width, 3)
+            
+            # Convert BGR888 → BGR565
+            b = (frame24[:, :, 0] >> 3).astype(np.uint16)
+            g = (frame24[:, :, 1] >> 2).astype(np.uint16)
+            r = (frame24[:, :, 2] >> 3).astype(np.uint16)
+
+            frame565 = (b << 11) | (g << 5) | r   # uint16 (H, W)
+                
+
+            writer.write(frame24)
+
+            f.write(frame565)
+
+
+                
 
     writer.release()
 
