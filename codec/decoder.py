@@ -3,11 +3,6 @@ import numpy as np
 import cv2
 
 
-def zigzagDecode(arr: np.ndarray) -> np.ndarray:
-    return (arr.astype(np.int16) >> 1) ^ (-(arr.astype(np.int16)&1))
-
-
-
 def rleDecode(stream: bytearray, width: int, height: int, position: int = 0) -> tuple[np.ndarray,  int]:
 
 
@@ -126,18 +121,14 @@ def decoder(filename: str, output_file) -> None:
     while pos < len(video): 
 
         # RLE decode 
-        zigzag_frame, pos = rleDecode(video, width, height, pos)
-
-        # Zigzag decode
-        deltas = zigzagDecode(zigzag_frame)
+        deltas, pos = rleDecode(video, width, height, pos)
 
         # Delta decode
         if prev_frame is None:
             curr_idx = deltas
         else:
-            curr_idx = (prev_frame + deltas).astype(np.int16)
-            curr_idx = np.clip(prev_frame + deltas, 0, num_colors -1)
-        #curr_idx = (curr_idx & 0xFF).astype(np.int32)
+            curr_idx = (prev_frame + deltas).astype(np.uint8)
+
         prev_frame = curr_idx
 
         # Sanity check palette indices aren't out of range

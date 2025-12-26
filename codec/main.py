@@ -53,9 +53,9 @@ def main():
 
 
     # TEST print of first frame quantized before encoding
-    indices = quantize_pixels(first_frame, color_palette)
+    #indices = quantize_pixels(first_frame, color_palette)
 
-    # -----------------------------
+    """ # -----------------------------
     # Reconstruct image
     # -----------------------------
     quantized_pixels = color_palette[indices].reshape(height,width)              # fancy indexing
@@ -69,7 +69,7 @@ def main():
     # -----------------------------
     cv2.imshow("Quantized", quantized_img)
     cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    cv2.destroyAllWindows() """
    
 
 

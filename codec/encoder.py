@@ -22,7 +22,8 @@ def deltaEncode(palette_indices: np.ndarray) -> np.ndarray:
 
         # Compute the delta frame as difference between current and previous frame
         # append it to list and update previous frame value
-        delta_frame = idx_frame.astype(np.int16) - prev.astype(np.int16)
+        #delta_frame = idx_frame.astype(np.int16) - prev.astype(np.int16)
+        delta_frame = idx_frame.astype(np.uint8) - prev.astype(np.uint8)
 
 
         deltas.append(delta_frame) 
@@ -33,10 +34,6 @@ def deltaEncode(palette_indices: np.ndarray) -> np.ndarray:
     return deltas
 
     
-def zigzagEncode(arr: np.ndarray) -> np.ndarray:
-    return ((arr << 1) ^ (arr >> 15)).astype(np.uint8) # perhaps zigzag is truncating
-
-
 #+----------+--------------------+------------------------------+
 #| TOKEN    | BYTE STREAM        | DECODED OUTPUT               |
 #+----------+--------------------+------------------------------+
@@ -50,6 +47,7 @@ def zigzagEncode(arr: np.ndarray) -> np.ndarray:
 # The RLE uses a 2 byte format where bit 7 of the first byte determines if the following value is 
 # a run or literal; bit 0-6 determines how many literals or runs to emit (up to 127) 
 def rleEncode(values: np.ndarray) -> np.ndarray:
+    
     result = []
     n = len(values)
     i = 0
@@ -62,7 +60,7 @@ def rleEncode(values: np.ndarray) -> np.ndarray:
         # =============================================================
         # Check for encoded run (repetition of same value)
         # =============================================================
-        run_val = int(values[i])
+        run_val = np.uint8(values[i])
         run_len = 1
 
 
@@ -148,9 +146,9 @@ def compress_video(frames: np.ndarray) -> bytearray:
     for frame in delta_frames: 
         
         flat_frame = frame.ravel()
-        zigzag_frame = zigzagEncode(flat_frame)
-        rle_frame = rleEncode(zigzag_frame)
-
+        #zigzag_frame = zigzagEncode(flat_frame)
+        #rle_frame = rleEncode(zigzag_frame)
+        rle_frame = rleEncode(flat_frame)
 
         compressed_frames.extend(rle_frame)
 
