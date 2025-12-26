@@ -115,7 +115,7 @@ def main():
     with open(ENCODED_BIN, "wb") as f:
         f.write(b"\x56\x43")         # decoder expects this to identify video format
         f.write(bytes([width, height]))    # Width and Height of frames
-        f.write((256).to_bytes(2, "big"))                 # number of colors in palette
+        f.write((NUM_COLOR).to_bytes(2, "big"))                 # number of colors in palette
         f.write(bytes([0xFF]))       # Dummy byte for flags to be defined later
 
         f.write(palette_bgr.tobytes())
