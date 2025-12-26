@@ -67,7 +67,7 @@ def decoder(filename: str, output_file) -> None:
 
     # Parse the stream header 
     format_id = video[pos:pos+2]   
-    print(format_id) 
+    #print(format_id) 
     if format_id != b"\x56\x43":
         raise ValueError("Invalid video format")
     pos += 2 
@@ -87,10 +87,8 @@ def decoder(filename: str, output_file) -> None:
 
 
     # Parse palette table
-    #palette_bytes = video[pos:pos + num_colors *2]
     palette_bytes = video[pos:pos + num_colors * 3] # if palette is 24 bits
 
-    #pos += num_colors * 2
     pos += num_colors * 3
     
 
@@ -109,9 +107,8 @@ def decoder(filename: str, output_file) -> None:
         (width, height)
     )
 
-
-    # For all frames 
-    # Decode frames and write to the output file
+ 
+    # Decode all compressed frames and write to the output file
     prev_frame = None
     
     with open("output/video.bgr565", "wb") as f:
@@ -150,8 +147,6 @@ def decoder(filename: str, output_file) -> None:
 
             f.write(frame565)
 
-
-                
 
     writer.release()
 

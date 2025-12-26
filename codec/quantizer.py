@@ -119,31 +119,6 @@ def quantize_pixels(pixels: np.ndarray, palette: np.ndarray) -> np.ndarray:
 
     print(f'Time to compute euclidean distances: {end-start:.2f}')
 
-    # Compute squared distances using broadcasting:
-    #(N,1) - (1,K) → (N,K) matrix
-    """ euclidean_start = time.time()
-    dist = np.sqrt(
-          (pR[:,None]  - cR[None,:]    )**2
-        + (pG[:,None]  - cG[None,:] )**2
-        + (pB[:,None]  - cB[None,:] )**2) 
-    euclidean_end = time.time() """
-
-    #print(f'pB dimensions: {pB.shape}')
-    #print(f'cB dimensions: {cB.shape}')
-    #print(f'dist matrix dimensions: {dist.shape}')
-
-    """ print(f'Time to compute euclidean distances: {euclidean_end-euclidean_start:.2f}')
-  
-    if np.any(np.isnan(dist)):
-        raise ValueError("NaNs detected in distance matrix")
-
-    start = time.time()
-    # pick closest palette color
-    indices = np.argmin(dist, axis=1).astype(np.uint8) # 256 colors → uint8 indices
-    end = time.time()
-    print(f'Time to map indices: {end-start:.2f}')
-     """
-
     return  indices
 
 

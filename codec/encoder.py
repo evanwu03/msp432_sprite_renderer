@@ -126,11 +126,11 @@ def compress_video(frames: np.ndarray) -> bytearray:
     delta_frames = deltaEncode(frames)
 
     # Dumps delta frames in a txt file
-    with open(FRAME_TXT_DUMP, "w") as f:
+    """ with open(FRAME_TXT_DUMP, "w") as f:
         for i, frame in enumerate(delta_frames):
             f.write(f"# --- Frame {i} ---\n")
             np.savetxt(f, frame, fmt="%x")
-            f.write("\n\n")
+            f.write("\n\n") """
 
 
     # ==============================

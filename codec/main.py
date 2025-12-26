@@ -1,9 +1,6 @@
 
-
-
 import numpy as np
 import time 
-import cv2
 
 from quantizer import generate_palette
 from quantizer import quantize_pixels
@@ -47,15 +44,14 @@ def main():
     # Generate Color palette
     NUM_COLOR = 256
     color_palette = generate_palette(pixels, NUM_COLOR)
+    #print(color_palette)
 
 
+    """
     # TEST print of first frame quantized before encoding
     #first_frame = video[0, :, :].ravel() # quantize only the first frame
     #indices = quantize_pixels(first_frame, color_palette)
-
-    """ # -----------------------------
-    # Reconstruct image
-    # -----------------------------
+    
     quantized_pixels = color_palette[indices].reshape(height,width)              # fancy indexing
     quantized_img = np.empty((height, width, 3), dtype = np.uint8) 
     quantized_img[:, :, 0] = (quantized_pixels >> 16) & 0xFF  # B
@@ -70,8 +66,6 @@ def main():
     cv2.destroyAllWindows() """
    
 
-
-    #print(color_palette)
     palette_b = (color_palette >> 16)  & 0xFF
     palette_g = (color_palette >> 8)  & 0xFF
     palette_r = (color_palette >> 0) & 0xFF
@@ -94,7 +88,7 @@ def main():
 
 
     #print(f'Quantized Video Resolution: {quantized_frame.shape}')
-    print( quantized_frame.min(),quantized_frame.max() )
+    #print( quantized_frame.min(),quantized_frame.max() )
     assert quantized_frame.min() >= 0 
     assert quantized_frame.max() < NUM_COLOR
 
