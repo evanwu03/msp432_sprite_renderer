@@ -139,7 +139,7 @@ def main():
 
 
     # Generate C style array to be used by an MCU
-    with open("output/video_data.inc", "w") as f:
+    with open("../src/video_data.inc", "w") as f:
         for i, b in enumerate(data):
             if i % 12 == 0:
                 f.write("\n")
