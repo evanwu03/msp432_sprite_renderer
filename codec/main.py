@@ -106,11 +106,11 @@ def main():
 
     # append global header to byte array. format of final C stream will be as follows 
     # [HEADER] 
-    # Byte 0–1 : Magic            (e.g. 0x56 0x43 = "VC")
+    # Byte 0-1 : Magic            (e.g. 0x56 0x43 = "VC")
     # Byte 2-3   : Width            (e.g. 128 pixels)
-    # Byte 3-4   : Height           (e.g. 128 pixels )
-    # Byte 5   : Num colors       (palette size: e.g. 256)
-    # Byte 6   : Flags            (delta, zigzag, etc.)
+    # Byte 4-5   : Height           (e.g. 128 pixels )
+    # Byte 6-7   : Num colors       (palette size: e.g. 256)
+    # Byte 8   : Flags            (delta, zigzag, etc.)
     # [PALETTE] 
     # [FRAME STREAM]
 

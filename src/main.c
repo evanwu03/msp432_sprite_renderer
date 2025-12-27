@@ -18,10 +18,10 @@
 
 
 // Pixel art byte map
-#include "pixel_map.h"
+//#include "../include/pixel_map.h"
 
 // Video file 
-//#include "video.h"
+#include "video.h"
 
 
 #define WIDTH 128
