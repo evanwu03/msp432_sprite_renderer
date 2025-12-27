@@ -18,7 +18,7 @@ import os
 #FILENAME = 'kikuri_10fps.mp4'
 #FILENAME = 'kikuri_20fps.mp4'
 #FILENAME = 'ragebaited.mp4'
-FILENAME = 'bocchi.mp4'
+#FILENAME = 'bocchi.mp4'
 #FILENAME = 'bocchi-dance4.mp4'
 #FILENAME = 'idk_10fps.mp4'
 #FILENAME = 'kaela.mp4'
@@ -28,7 +28,10 @@ FILENAME = 'bocchi.mp4'
 #FILENAME  = 'raden_20fps.mp4'
 #FILENAME  = 'raden_12fps.mp4'
 #FILENAME = 'trampoline3.mp4'
-
+#FILENAME = 'btr.mp4'
+#FILENAME = 'btr2.mp4'
+#FILENAME = 'btr3.mp4'
+FILENAME = 'furry.mp4'
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 FILEPATH = os.path.join(BASE, 'videos', FILENAME)

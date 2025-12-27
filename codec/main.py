@@ -43,8 +43,8 @@ def main():
 
     # Generate Color palette
     NUM_COLOR = 256
-    #color_palette = generate_palette(pixels, NUM_COLOR)
-    color_palette = generate_palette(video[0, :, :].ravel(), NUM_COLOR)
+    color_palette = generate_palette(pixels, NUM_COLOR)
+    #color_palette = generate_palette(video[0, :, :].ravel(), NUM_COLOR)
     #print(color_palette)
 
 
