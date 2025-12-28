@@ -32,6 +32,7 @@ import os
 #FILENAME = 'btr2.mp4'
 #FILENAME = 'btr3.mp4'
 FILENAME = 'furry.mp4'
+#FILENAME  = 'bad_apple2.mp4'
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 FILEPATH = os.path.join(BASE, 'videos', FILENAME)
