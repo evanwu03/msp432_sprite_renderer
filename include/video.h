@@ -43,6 +43,7 @@ typedef enum {
     HDR_ERR_DIM_ZERO,
     HDR_ERR_DIM_TOO_LARGE,
     HDR_ERR_NO_COLORS,
+    HDR_ERR_TOO_MANY_COLORS
 } parse_header_status_t;
 
 
@@ -53,10 +54,7 @@ typedef enum {
 
 typedef enum { 
     PAL_OK,
-    PAL_ERR_ZERO_COLORS,
-    PAL_ERR_TOO_MANY_COLORS,
     PAL_INCOMPLETE,
-
 } parse_palette_status_t;
 
 

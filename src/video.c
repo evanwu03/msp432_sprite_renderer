@@ -38,6 +38,10 @@ parse_header_status_t parse_stream_header(video_stream_header_t* hdr, const uint
         return HDR_ERR_NO_COLORS;
     }
 
+    if (num_colors > MAX_PALETTE_COLORS) { 
+        return HDR_ERR_TOO_MANY_COLORS;
+    }
+
 
     hdr->file_format = file_format;
     hdr->width       = width;
@@ -59,13 +63,7 @@ parse_palette_status_t parse_palette(
     unsigned long expected_palette_bytes;
     unsigned int palette_start;
 
-    /* --- validate num_colors --- */
-    if (num_colors == 0)
-        return PAL_ERR_ZERO_COLORS;   /* or PAL_ERR_ZERO_COLORS */
-
-    if (num_colors > MAX_PALETTE_COLORS)
-        return PAL_ERR_TOO_MANY_COLORS;
-
+    
     expected_palette_bytes = num_colors * PALETTE_BYTES_PER_COLOR;
     palette_start = VIDEO_STREAM_HEADER_SIZE; // Start after the header
 

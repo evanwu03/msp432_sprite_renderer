@@ -119,6 +119,8 @@ TEST(parseHeaderTests, emptyDimension) {
     CHECK_EQUAL(HDR_ERR_DIM_ZERO, status);
 }
 
+
+
 TEST(parseHeaderTests, dimensionExceedsMax) { 
 
      const uint8_t header[] =  {
@@ -160,6 +162,29 @@ TEST(parseHeaderTests, noColorsInPalette) {
     CHECK_EQUAL(HDR_ERR_NO_COLORS, status);
 
 }
+
+
+TEST(parseHeaderTests, tooManyColorsInPalette) { 
+
+
+     const uint8_t header[] =  {
+        0x56, 0x43, 
+        0x00, 0x80, // Width  = 128
+        0x00, 0x80, // Height = 128
+        0x01, 0x01, // num_colors = 257, this is not valid
+        0xFF
+    };
+
+    unsigned long video_len = sizeof(header);
+
+    video_stream_header_t hdr = {0};
+
+    parse_header_status_t status = parse_stream_header(&hdr, header, video_len);
+
+    CHECK_EQUAL(HDR_ERR_TOO_MANY_COLORS, status);
+
+}
+
 
 
 TEST_GROUP(parsePaletteTests) { 
@@ -211,8 +236,30 @@ TEST(parsePaletteTests, successfulParse) {
 
 
     //printPalette(palette, header.num_colors);
-    
+
 };  
 
 
+TEST(parsePaletteTests, paletteIncomplete) {
 
+    const uint8_t stream[] = {
+        0x56, 0x43,          // magic
+        0x00, 0x6C,
+        0x00, 0x7A,
+        0x01, 0x00,
+        0x00,               // num_colors = 0
+        0x00,// no palette data
+    };
+
+    unsigned long video_len = sizeof(stream);
+
+    video_stream_header_t header = {0};
+    uint32_t palette[MAX_PALETTE_COLORS];
+
+    parse_header_status_t header_status = parse_stream_header(&header, stream, video_len);
+
+    parse_palette_status_t palette_status = parse_palette(palette, stream, MAX_PALETTE_COLORS, header.num_colors);
+
+    CHECK_EQUAL(HDR_OK, header_status);
+    CHECK_EQUAL(PAL_INCOMPLETE, palette_status);
+}

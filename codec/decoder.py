@@ -55,7 +55,7 @@ def rleDecode(stream: bytearray, width: int, height: int, position: int = 0) -> 
 
 
 # Reads the compressed video binary and decodes the frames and writes them to a video file
-def decoder(filename: str, output_file) -> None: 
+def decoder(filename: str, output_file: str) -> None: 
 
 
     with open(filename, "rb") as f: 
